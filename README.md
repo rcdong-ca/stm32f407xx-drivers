@@ -1,2 +1,2 @@
 # stm32f407xx-drivers
-Drivers for Peripherals on the STM32f407
+Drivers for Peripherals on the STM32f407xx MCU
