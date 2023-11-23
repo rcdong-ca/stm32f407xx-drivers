@@ -26,6 +26,47 @@
 #define APB1_BASE_ADDR		0x4000 0000UL
 #define APB2_BASE_ADDR		0x4001 0000UL
 
+/* base address of GPIO peripherals (Connected to AHB1 bus) */
+#define GPIOA_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 0)	// each GPIO address is of 0x400 size
+#define GPIOB_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 1)
+#define GPIOC_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 2)
+#define GPIOD_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 3)
+#define GPIOE_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 4)
+#define GPIOF_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 5)
+#define GPIOG_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 6)
+#define GPIOH_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 7)
+#define GPIOI_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 8)
+#define GPIOJ_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 9)
+#define GPIOK_BASE_ADDR		AHB1_BASE_ADDR + (0x0400UL * 10)
+
+/* Base address of I2C Peripherals (Connected to APB1 Bus) */
+#define I2C1_BASE_ADDR		APB1_BASE_ADDR + 0x5400UL
+#define I2C2_BASE_ADDR		APB1_BASE_ADDR + 0x5800UL
+#define I2C3_BASE_ADDR		APB1_BASE_ADDR + 0x5C00UL
+
+/* Base address of UART Peripherlas (Connected to APB1 Bus). Does not include all UART address. Add yourself */
+#define UART4		APB1_BASE_ADDR + 0x4C00UL
+#define UART5		APB1_BASE_ADDR + 0x5000UL
+
+
+/* Base address for SPI peripherals */
+#define SPI2		APB1_BASE_ADDR + 0x3800UL
+#define SPI3		APB1_BASE_ADDR + 0x3C00UL
+
+#define SPI1		APB2_BASE_ADDR + 0x3000UL
+
+/* Base address for USART peripherals */
+#define USART2		APB1_BASE_ADDR + 0x4400UL
+#define USART3		APB1_BASE_ADDR + 0x4800UL
+
+#define USART1		APB2_BASE_ADDR + 0x1000UL
+#define USART6		APB2_BASE_ADDR + 0x1400UL
+
+/* Base address for EXTI Peripheral */
+#define EXTI		APB2_BASE_ADDR + 0x3C00UL
+
+/* Base address for SYSCFG peripheral */
+#define SYSCFG_BASE_ADDR		APB2_BASE_ADDR + 0x4001 3800UL
 
 
 /*
