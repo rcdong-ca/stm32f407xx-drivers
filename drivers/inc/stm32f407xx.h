@@ -5,8 +5,8 @@
  *      Author: richard
  */
 
-#ifndef INC_STM32F407_H_
-#define INC_STM32F407_H_
+#ifndef INC_STM32F407XX_H_
+#define INC_STM32F407XX_H_
 
 
 
@@ -27,6 +27,7 @@
 #define APB2_BASE_ADDR		0x4001 0000UL
 
 
+
 /*
  * TODO::
  * 1. Define macros for other APB1 Peripherals, as we will be writing drivers for
@@ -42,4 +43,4 @@
  *
  */
 
-#endif /* INC_STM32F407_H_ */
+#endif /* INC_STM32F407XX_H_ */
