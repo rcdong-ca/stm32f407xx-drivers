@@ -203,4 +203,11 @@ typedef struct {
 #define SYSCFEN_PCLK_EN					RCC->APB2ER |= (1 << 14)
 #define SYSCFEN_PCLK_DI					RCC->APB2ER &= (0 << 14)
 
+/* Other macros and Enumerations */
+#define	DISABLE							(uint8_t)0
+#define ENABLE							(uint8_t)1
+#define RESET							DISABLE
+#define SET								ENABLE
+
+
 #endif /* INC_STM32F407XX_H_ */
