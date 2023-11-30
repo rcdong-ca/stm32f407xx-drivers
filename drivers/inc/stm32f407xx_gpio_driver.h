@@ -24,7 +24,7 @@ typedef struct {
 /* GPIO handler for users to configure GPIO */
 typedef struct {
 	GPIO_RegDef_t* GPIOx_ptr;			// holds the base address of GPIO port
-	GPIO_PinConfig_t* GPIOx_PinConfig;
+	GPIO_PinConfig_t GPIOx_PinConfig;
 
 
 }GPIO_Handle_t;
@@ -34,12 +34,15 @@ typedef struct {
  */
 
 void GPIO_Init(GPIO_Handle_t* GPIOx_Handler);
-void GPIO_DeInit(GPIO_RegDef_t* GPIOx_ptr);  // reset all registers for GPIOx port
-uint8_t GPIO_ReadFromInputPin(GPIO_RegDef_t* GPIOx_ptr, uint8_t PinNumber);
-uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t* GPIOx_ptr);  // 16 pins so 16 bit int
-void GPIO_WriteToOutputPin(GPIO_RegDef_t* GPIOx_ptr, uint8_t PinNumber, uint8_t Val);
-void GPIO_WriteToOutputPort(GPIO_RegDef_t* GPIOx_ptr, uint16_t OutputData);
-void GPIO_ToggleOutputPin(GPIO_RegDef_t* GPIOx_ptr, uint8_t PinNUmber, uint8_t EN_DI); //
+void GPIO_DeInit(GPIO_Handle_t* GPIOx_Handler);
+
+uint8_t GPIO_ReadFromInputPin(GPIO_Handle_t* GPIOx_Handler);
+uint16_t GPIO_ReadFromInputPort(GPIO_Handle_t* GPIOx_Handler);
+
+uint16_t GPIO_ReadFromOutputPort(GPIO_Handle_t* GPIOx_Handler);
+void GPIO_WriteToOutputPin(GPIO_Handle_t* GPIOx_Handler, uint8_t Val);
+void GPIO_WriteToOutputPort(GPIO_Handle_t* GPIOx_Handler, uint16_t OutputData);
+void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler);
 
 
 /*
@@ -54,7 +57,7 @@ void GPIO_IRQHandling(GPIO_RegDef_t* GPIOx_ptr, uint8_t PinNumber);
  * Peripheral Clock controller for GPIO
  */
 
-void GPIO_PCLKControl(GPIO_RegDef_t* GPIOx_ptr, uint8_t En_Di);  // Peripheral Clock controller
+void GPIO_PCLKControl(GPIO_Handle_t* GPIOx_Handler, uint8_t En_Di);  // Peripheral Clock controller
 
 
 /* @GPIO_PIN_MODES
@@ -74,7 +77,7 @@ void GPIO_PCLKControl(GPIO_RegDef_t* GPIOx_ptr, uint8_t En_Di);  // Peripheral C
  * GPIO Output Types
  */
 #define GPIO_OTYPE_PP			0		// PUSH PULL (reset state)
-#define PIO_OTYPE_OD			1		// OPEN DRAIN
+#define GPIO_OTYPE_OD			1		// OPEN DRAIN
 
 /* @GPIO_OSPEED
  * GPIO Output speed
@@ -97,7 +100,7 @@ void GPIO_PCLKControl(GPIO_RegDef_t* GPIOx_ptr, uint8_t En_Di);  // Peripheral C
 #define GPIOA_RESET()			{RCC->AHB1RSTR |= (1 << 0); RCC->AHB1RSTR &= ~(1 << 0); }
 #define GPIOB_RESET()			{RCC->AHB1RSTR |= (1 << 1); RCC->AHB1RSTR &= ~(1 << 1); }
 #define GPIOC_RESET()			{RCC->AHB1RSTR |= (1 << 2); RCC->AHB1RSTR &= ~(1 << 2); }
-#define GPIOD_RESET()			{RCC->AHB1RSTR |= (1 << 3); RCC->AHB1RSTR &= ~(1 << 3); }
+#define GPIOD_RESET()			do{RCC->AHB1RSTR |= (1 << 3); RCC->AHB1RSTR &= ~(1 << 3); }while(0)
 #define GPIOE_RESET()			{RCC->AHB1RSTR |= (1 << 4); RCC->AHB1RSTR &= ~(1 << 4); }
 #define GPIOF_RESET()			{RCC->AHB1RSTR |= (1 << 5); RCC->AHB1RSTR &= ~(1 << 5); }
 #define GPIOG_RESET()			{RCC->AHB1RSTR |= (1 << 6); RCC->AHB1RSTR &= ~(1 << 6); }
