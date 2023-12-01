@@ -1,11 +1,10 @@
 /*
- * led_toggle.c
+ * led_button.c
  *
- *  Created on: Nov 29, 2023
+ *  Created on: Nov 30, 2023
  *      Author: richard
- *
- * Led application to test GPIO driver correctness
  */
+
 
 #include <stdio.h>
 #include <time.h>
@@ -13,8 +12,10 @@
 #include "stm32f407xx.h"
 #include "stm32f407xx_gpio_driver.h"
 
+#define BUTTON_PRESSED 1
+
 void delay(void) {
-	for (uint32_t i =0; i < 1000000; i++) {}
+	for (uint32_t i =0; i < 500000/2; i++) {}
 }
 
 int main(void) {
@@ -29,11 +30,22 @@ int main(void) {
 	GPIO_PCLKControl(&Gpio_Led, ENABLE);
 	GPIO_Init(&Gpio_Led);
 
+	GPIO_Handle_t Gpio_Button;
+	Gpio_Button.GPIOx_ptr = GPIOA;
+	Gpio_Button.GPIOx_PinConfig.PinNumber = 0;
+	Gpio_Button.GPIOx_PinConfig.PinMode = GPIO_MODE_IN;
+	Gpio_Button.GPIOx_PinConfig.PinPUpPDo = GPIO_PUPD_NO;	// External Pull Down exists as seen in schematic. No need for internal
+	GPIO_PCLKControl(&Gpio_Button, ENABLE);
+	GPIO_Init(&Gpio_Button);
+
 
 	while(1) {
-		GPIO_ToggleOutputPin(&Gpio_Led);
-		delay();
+		if (GPIO_ReadFromInputPin(&Gpio_Button) == BUTTON_PRESSED) {
+			delay();		// debouncing
+			GPIO_ToggleOutputPin(&Gpio_Led);
+		}
 	}
 }
+
 
 

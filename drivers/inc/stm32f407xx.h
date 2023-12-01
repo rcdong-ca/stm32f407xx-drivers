@@ -71,6 +71,8 @@
 /* Base address for SYSCFG peripheral */
 #define SYSCFG_BASE_ADDR		(APB2_BASE_ADDR + 0x3800)
 
+/* Reset and Control Clock Registers (RCC reg) and Peripheral Clocks */
+#define RCC_BASE_ADDR			(AHB1_BASE_ADDR + 0x3800U)
 
 /* Peripheral register structure for RCC */
 typedef struct {
@@ -124,8 +126,25 @@ typedef struct {
 	__vo uint32_t AFR[2];  // Low is first, high is second
 }GPIO_RegDef_t;
 
-/* Reset and Control Clock Registers (RCC reg) and Peripheral Clocks */
-#define RCC_BASE_ADDR			(AHB1_BASE_ADDR + 0x3800U)
+/* EXTI Register Structure Peripheral */
+
+typedef struct {
+	uint32_t IMR;				// Interrupt Mask Register. 0 to mask a line. 1 to unmask a line
+	uint32_t EMR;				// Event Mask Register. 0 to mask, 1 to unmask
+	uint32_t RTSR;				// Rising Trigger Selection Reg. 0: Disable line x, 1: enable line x
+	uint32_t FTSR;				// Falling Trigger Selection Reg. Same as RTSR
+	__vo uint32_t SWIER;		// Software Interrupt event Reg. 1: Interrupt Request Generation. Cleared by writing 1 to corresponding bit in PR reg
+	__vo uint32_t PR;			// Pending Request. 1: Selected trigger request occured.0: no trigger request occured
+}EXTI_RegDef_t;
+
+/* SYSCFG Register Structure Peripheral */
+typedef struct {
+	__vo uint32_t MEMRMP;
+	__vo uint32_t PMC;
+	__vo uint32_t EXTICR[4];		// External Interrupt Configuration Reg. Each covers 4 pins
+	__vo uint32_t CMPCR;		// Compensation Cell Reg. 0:I/O not ready. 1: O ready. 8 and 0 bit only
+}SYSCFG_RegDef_t;
+
 
 // Note: Dereferencing random areas in memory may cause segmentation fault, which is why we () again
 #define RCC						((RCC_RegDef_t*)RCC_BASE_ADDR)
@@ -140,6 +159,10 @@ typedef struct {
 #define GPIOG					((GPIO_RegDef_t*)GPIOG_BASE_ADDR)
 #define GPIOH					((GPIO_RegDef_t*)GPIOH_BASE_ADDR)
 #define GPIOI					((GPIO_RegDef_t*)GPIOI_BASE_ADDR)
+
+#define EXTI					((EXTI_RegDef_t*)EXTI_BASE_ADDR)
+#define SYSCFG					((SYSCFG_RegDef_t*)SYSCFG_BASE_ADDR)
+
 
 /*
  * Clock Enable/Disable macros for GPIOx Peripherals. Note: GPIO are connected to AHB1 BUS.
@@ -212,11 +235,14 @@ typedef struct {
 #define SYSCFEN_PCLK_EN()				(RCC->APB2ER |= (1 << 14))
 #define SYSCFEN_PCLK_DI()				(RCC->APB2ER &= (0 << 14))
 
+/*
+ * SYSCFG_EXTIx Macros the lines each supports
+ */
 
 
 /* Other macros and Enumerations */
-#define	DISABLE							((uint8_t)0)
-#define ENABLE							((uint8_t)1)
+#define	DISABLE							(0)
+#define ENABLE							(1)
 #define RESET							(DISABLE)
 #define SET								(ENABLE)
 

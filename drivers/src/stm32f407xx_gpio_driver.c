@@ -8,14 +8,38 @@
 #include "stm32f407xx_gpio_driver.h"
 #include <stdio.h>
 
-/*
- * 1. Develop Handle structure for a GPIO pin
- * 	- pointer to hold the base address of the GPIO peripheral
- * 	- configuration structure as a pin can have many configurations
- *
- *
- * 	2.  Implement the prototypes listed in the header file which serve as the driver requirements
- */
+
+uint8_t GPIO_PortToNumber(GPIO_RegDef_t* GPIOx_ptr) {
+	if (GPIOx_ptr == GPIOA) {
+		return 0;
+	}
+	else if (GPIOx_ptr == GPIOB) {
+		return 1;
+	}
+	else if (GPIOx_ptr == GPIOC) {
+			return 2;
+		}
+	else if (GPIOx_ptr == GPIOD) {
+			return 3;
+		}
+	else if (GPIOx_ptr == GPIOE) {
+			return 4;
+		}
+	else if (GPIOx_ptr == GPIOF) {
+			return 5;
+		}
+	else if (GPIOx_ptr == GPIOG) {
+			return 6;
+		}
+	else if (GPIOx_ptr == GPIOH) {
+			return 7;
+		}
+	else if (GPIOx_ptr == GPIOI) {
+			return 8;
+	}
+	// TODO:: ADD LOGGING FOR INCORRECT GPIO PORT ADDRESS
+	return 0;
+}
 
 /*
  * GPIO_Init() initializes the GPIO port according to the configurations found in the GPIO handler
@@ -33,12 +57,48 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 		temp = PinConfig_ptr->PinMode << (PinConfig_ptr->PinNumber * 2);
 //		// bitfield may already have values, clear it
 		GPIOx_ptr->MODER &= ~(0x3 << (PinConfig_ptr->PinNumber * 2) );
-		GPIO_RegDef_t* my_addr = GPIOD;
-		GPIOx_ptr->MODER = temp;
+		GPIOx_ptr->MODER |= temp;
 
 	}
 	else {
 		// TODO:: Do GPIOX interrupt in GPIO_INIT
+
+		if (PinConfig_ptr->PinMode == GPIO_MODE_IN_FT) {
+			// clear the RT so its only FT
+			EXTI->RTSR &= (1 << PinConfig_ptr->PinNumber);
+			EXTI->FTSR |= (1 << PinConfig_ptr->PinNumber);
+
+		}
+		else if (PinConfig_ptr->PinMode == GPIO_MODE_IN_RT) {
+			EXTI->FTSR &= (1 << PinConfig_ptr->PinNumber);
+			EXTI->RTSR |= (1 << PinConfig_ptr->PinNumber);
+
+		}
+		else if (PinConfig_ptr->PinMode == GPIO_MODE_IN_RFT) {
+			EXTI->RTSR |= (1 << PinConfig_ptr->PinNumber);
+			EXTI->FTSR |= (1 << PinConfig_ptr->PinNumber);
+		}
+		else {
+			// INVALID MODE:: LOG Invalid!
+		}
+		// Unmask the line so processor can see the interrupt
+		EXTI->IMR |=  (1 << PinConfig_ptr->PinNumber);
+		// Tell processor where the source of the interrupt is coming from
+		uint8_t RegNum = PinConfig_ptr->PinNumber / 4;		// Each Reg accounts for 4 pins
+		uint8_t GPIO_PortNum = GPIO_PortToNumber(GPIOx_ptr);
+		SYSCFG->EXTICR[RegNum] &= ~(GPIO_PortNum << (GPIO_PortNum % 4) );
+		SYSCFG->EXTICR[RegNum] |= (GPIO_PortNum << (GPIO_PortNum % 4) );
+
+		/*
+		 * 1. Pin MUST be in input mode
+		 * 2. Configure the edge Trigger RT, FT, RFT
+		 * 3. Enable interrupt  delivery from pheripheral to processor (peri side) in EXti reg
+		 * 4. Identify the IRQ number on which the processor accepts interrupt from that pin
+		 * 5. Configure the IRQ priortiy for the IRQ number (processor side) Done via NVIC registers
+		 * 6. Enable interrupt reception on that IRQ number (processor ) side
+		 * 7. Implement the IRQ HAndler
+		 */
+
 	}
 	// 2. Configure the output speed
 	temp = PinConfig_ptr->PinOutputSpeed << (PinConfig_ptr->PinNumber * 2);
