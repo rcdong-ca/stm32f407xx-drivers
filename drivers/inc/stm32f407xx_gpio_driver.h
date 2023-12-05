@@ -9,6 +9,7 @@
 #define INC_STM32F407XX_GPIO_DRIVER_H_
 
 #include "stm32f407xx.h"
+#include "arm_cortexM4.h"
 
 /* Pin configuration structure for GPIO*/
 typedef struct {
@@ -42,16 +43,17 @@ uint16_t GPIO_ReadFromInputPort(GPIO_Handle_t* GPIOx_Handler);
 uint16_t GPIO_ReadFromOutputPort(GPIO_Handle_t* GPIOx_Handler);
 void GPIO_WriteToOutputPin(GPIO_Handle_t* GPIOx_Handler, uint8_t Val);
 void GPIO_WriteToOutputPort(GPIO_Handle_t* GPIOx_Handler, uint16_t OutputData);
-void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler);
+//void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler);
+void GPIO_ToggleOutputPin(GPIO_RegDef_t* GpioPort, uint8_t PinNumber);
 
 
 /*
  * IRQ (Interrupt request) configuration and ISR (Interrupt Signal Response) handling
  */
 
-void GPIO_IRQConfig(uint8_t IRQNumber, uint8_t Priority, uint8_t EN_DI);	// Interrupt requests configuration
-
-void GPIO_IRQHandling(GPIO_RegDef_t* GPIOx_ptr, uint8_t PinNumber);
+void GPIO_IRQInterruptConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t EN_DI);	// Interrupt requests configuration
+void GPIO_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t IRQPriority);
+void GPIO_IRQHandling(uint8_t PinNumber);
 
 /*
  * Peripheral Clock controller for GPIO

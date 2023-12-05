@@ -5,7 +5,7 @@
  *      Author: richard
  *
  *
- * Memory mapping of st32f407CGDISC-1 board
+ *
  */
 
 #ifndef INC_STM32F407XX_H_
@@ -14,6 +14,10 @@
 #include <stdint.h>
 
 #define __vo volatile  // Acronym for volatile
+
+
+
+
 
 /* base address of flash and sram memory (based off stm32f4 ref man)*/
 #define FLASH_BASE_ADDR 		0x08000000U // where cod is stored
@@ -162,6 +166,23 @@ typedef struct {
 
 #define EXTI					((EXTI_RegDef_t*)EXTI_BASE_ADDR)
 #define SYSCFG					((SYSCFG_RegDef_t*)SYSCFG_BASE_ADDR)
+
+
+/*
+ * IRQ (Interrupt Requests) Interrupt Position/Number of NVIC EXTI lines
+ */
+#define IRQ_NO_EXTI0						6
+#define IRQ_NO_EXTI1						7
+#define IRQ_NO_EXTI2						8
+#define IRQ__NOEXTI3						9
+#define IRQ_NO_EXTI4						10
+#define IRQ_NO_EXTI9_5						23
+#define IRQ_NO_EXTI15_10					40
+
+/*
+ * MCU supports 16 programmable priority levels; 4 bits of interrupt priority are implemented
+ */
+#define NVIC_MCU_PR_BITS				4
 
 
 /*

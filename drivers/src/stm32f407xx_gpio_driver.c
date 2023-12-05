@@ -5,6 +5,7 @@
  *      Author: richard
  */
 
+#include "arm_cortexM4.h"
 #include "stm32f407xx_gpio_driver.h"
 #include <stdio.h>
 
@@ -59,9 +60,24 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 		GPIOx_ptr->MODER &= ~(0x3 << (PinConfig_ptr->PinNumber * 2) );
 		GPIOx_ptr->MODER |= temp;
 
+		if (PinConfig_ptr->PinMode == GPIO_MODE_OUT) {
+			// 1. Configure the output speed
+			temp = PinConfig_ptr->PinOutputSpeed << (PinConfig_ptr->PinNumber * 2);
+			GPIOx_ptr->OSPEEDR &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
+			GPIOx_ptr->OSPEEDR |= temp;
+
+			// 3. configure the output type
+			temp = PinConfig_ptr->PinOutputType << (PinConfig_ptr->PinNumber);
+			GPIOx_ptr->OTYPER &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
+			GPIOx_ptr->OTYPER |= temp;
+		}
+
 	}
 	else {
-		// TODO:: Do GPIOX interrupt in GPIO_INIT
+		// Interrupt Mode still require pins to be in Input mode
+		temp = GPIO_MODE_IN << (PinConfig_ptr->PinNumber * 2);
+		GPIOx_ptr->MODER &= ~(0x3 << (PinConfig_ptr->PinNumber * 2) );
+		GPIOx_ptr->MODER |= temp;
 
 		if (PinConfig_ptr->PinMode == GPIO_MODE_IN_FT) {
 			// clear the RT so its only FT
@@ -83,34 +99,16 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 		}
 		// Unmask the line so processor can see the interrupt
 		EXTI->IMR |=  (1 << PinConfig_ptr->PinNumber);
-		// Tell processor where the source of the interrupt is coming from
+
+		// configure the EXTI control on which pin the interrupt will be coming from
 		uint8_t RegNum = PinConfig_ptr->PinNumber / 4;		// Each Reg accounts for 4 pins
 		uint8_t GPIO_PortNum = GPIO_PortToNumber(GPIOx_ptr);
 		SYSCFG->EXTICR[RegNum] &= ~(GPIO_PortNum << (GPIO_PortNum % 4) );
 		SYSCFG->EXTICR[RegNum] |= (GPIO_PortNum << (GPIO_PortNum % 4) );
 
-		/*
-		 * 1. Pin MUST be in input mode
-		 * 2. Configure the edge Trigger RT, FT, RFT
-		 * 3. Enable interrupt  delivery from pheripheral to processor (peri side) in EXti reg
-		 * 4. Identify the IRQ number on which the processor accepts interrupt from that pin
-		 * 5. Configure the IRQ priortiy for the IRQ number (processor side) Done via NVIC registers
-		 * 6. Enable interrupt reception on that IRQ number (processor ) side
-		 * 7. Implement the IRQ HAndler
-		 */
-
 	}
-	// 2. Configure the output speed
-	temp = PinConfig_ptr->PinOutputSpeed << (PinConfig_ptr->PinNumber * 2);
-	GPIOx_ptr->OSPEEDR &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
-	GPIOx_ptr->OSPEEDR |= temp;
 
-	// 3. configure the output type
-	temp = PinConfig_ptr->PinOutputType << (PinConfig_ptr->PinNumber);
-	GPIOx_ptr->OTYPER &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
-	GPIOx_ptr->OTYPER |= temp;
-
-	// 4. configure the pupd settings
+	// Configure the pupd settings
 	temp = PinConfig_ptr->PinPUpPDo << (PinConfig_ptr->PinNumber * 2);
 	GPIOx_ptr->PUPDR &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
 	GPIOx_ptr->PUPDR |= temp;
@@ -211,6 +209,9 @@ void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler) {
 	uint8_t PinNumber = GPIOx_Handler->GPIOx_PinConfig.PinNumber;
 	GPIOx_ptr->ODR ^= (1 << PinNumber);
 }
+//void GPIO_ToggleOutputPin(GPIO_RegDef_t* GpioPort, uint8_t PinNumber) {
+//	GpioPort->ODR ^= (1 << PinNumber);
+//}
 /*
  * Get Output Pin's current value
  * Input:
@@ -287,3 +288,62 @@ void GPIO_PCLKControl(GPIO_Handle_t* GPIOx_Handler, uint8_t En_Di) {
 	}
 
 }
+
+/*
+ * Configure the NVIC registers to accepts interrupt from EXTIx Line
+ */
+
+void GPIO_IRQInterruptConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t EN_DI) {
+	if (EN_DI == ENABLE) {
+
+		// MCU only supports up to 81 IRQ numbers, so we only need NVIC_ISER0 - NVIC_ISER2 registers
+		if (IRQNumber < 32) {
+			NVIC_Ctrl->ISER->REG[0] |= (1 << (IRQNumber % 32) );
+		}
+		else if (IRQNumber < 64) {
+			NVIC_Ctrl->ISER->REG[1] |= (1 << (IRQNumber % 32) );
+		}
+		else if (IRQNumber < 96) {
+			NVIC_Ctrl->ISER->REG[2] |= (1 << (IRQNumber % 32) );
+		}
+		else {
+			// LOG:: INVALID IRQ NUMBER
+		}
+	}
+	else {
+		if (IRQNumber < 32) {
+			NVIC_Ctrl->ICER->REG[0] |= (1 << (IRQNumber % 32) );
+		}
+		else if (IRQNumber < 64) {
+			NVIC_Ctrl->ICER->REG[1] |= (1 << (IRQNumber % 32) );
+		}
+		else if (IRQNumber < 96) {
+			NVIC_Ctrl->ICER->REG[2] |= (1 << (IRQNumber % 32) );
+		}
+		else {
+			// LOG:: INVALID IRQ NUMBER
+		}
+	}
+}
+
+void GPIO_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t IRQPriority) {
+
+	// IPR has 4 8bit priority fields
+	uint8_t TargetReg = IRQNumber / 4;
+	uint8_t TargetField = IRQNumber % 4;
+
+	// MCU support 16 levels; 4 bits of interrupt priority are used. This means only the 4 most significant bits
+	// in the field will be used, as stated by the processor manual
+	uint8_t ShiftAmount = ( TargetField * 8) + (NVIC_IPR_FIELD_SIZE - NVIC_MCU_PR_BITS) ;
+	NVIC_Ctrl->IPR->REG[TargetReg] |= (IRQPriority << ShiftAmount);
+}
+
+void GPIO_IRQHandling(uint8_t PinNumber) {
+
+	// clear the EXTI PR reg corresponding to the pin number
+	if (EXTI->PR & (1 << PinNumber)) {
+		EXTI->PR |= (1<< PinNumber);
+	}
+}
+
+
