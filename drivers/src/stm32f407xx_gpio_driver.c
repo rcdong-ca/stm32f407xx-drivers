@@ -209,9 +209,9 @@ void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler) {
 	uint8_t PinNumber = GPIOx_Handler->GPIOx_PinConfig.PinNumber;
 	GPIOx_ptr->ODR ^= (1 << PinNumber);
 }
-//void GPIO_ToggleOutputPin(GPIO_RegDef_t* GpioPort, uint8_t PinNumber) {
-//	GpioPort->ODR ^= (1 << PinNumber);
-//}
+void GPIO_ToggleOutputPinDirect(GPIO_RegDef_t* GpioPort, uint8_t PinNumber) {
+	GpioPort->ODR ^= (1 << PinNumber);
+}
 /*
  * Get Output Pin's current value
  * Input:

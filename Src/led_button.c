@@ -33,18 +33,24 @@ int main(void) {
 	GPIO_Handle_t Gpio_Button;
 	Gpio_Button.GPIOx_ptr = GPIOA;
 	Gpio_Button.GPIOx_PinConfig.PinNumber = 0;
-	Gpio_Button.GPIOx_PinConfig.PinMode = GPIO_MODE_IN;
+	Gpio_Button.GPIOx_PinConfig.PinMode = GPIO_MODE_IN_FT;
 	Gpio_Button.GPIOx_PinConfig.PinPUpPDo = GPIO_PUPD_NO;	// External Pull Down exists as seen in schematic. No need for internal
 	GPIO_PCLKControl(&Gpio_Button, ENABLE);
 	GPIO_Init(&Gpio_Button);
 
+	// IRQ Configurations
+	NVIC_RegDef_t NvicCtrl;
+	NVIC_CtrlInit(&NvicCtrl);
+	GPIO_IRQPriorityConfig(&NvicCtrl, IRQ_NO_EXTI0, 15);
+	GPIO_IRQInterruptConfig(&NvicCtrl, IRQ_NO_EXTI0, ENABLE);
 
-	while(1) {
-		if (GPIO_ReadFromInputPin(&Gpio_Button) == BUTTON_PRESSED) {
-			delay();		// debouncing
-			GPIO_ToggleOutputPin(&Gpio_Led);
-		}
-	}
+	while(1);
+}
+
+void EXTI0_IRQHandler(void) {
+	// comment out
+	GPIO_IRQHandling(0);
+	GPIO_ToggleOutputPinDirect(GPIOD, 12);
 }
 
 

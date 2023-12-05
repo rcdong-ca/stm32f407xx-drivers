@@ -43,8 +43,9 @@ uint16_t GPIO_ReadFromInputPort(GPIO_Handle_t* GPIOx_Handler);
 uint16_t GPIO_ReadFromOutputPort(GPIO_Handle_t* GPIOx_Handler);
 void GPIO_WriteToOutputPin(GPIO_Handle_t* GPIOx_Handler, uint8_t Val);
 void GPIO_WriteToOutputPort(GPIO_Handle_t* GPIOx_Handler, uint16_t OutputData);
-//void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler);
-void GPIO_ToggleOutputPin(GPIO_RegDef_t* GpioPort, uint8_t PinNumber);
+void GPIO_ToggleOutputPin(GPIO_Handle_t* GPIOx_Handler);
+
+void GPIO_ToggleOutputPinDirect(GPIO_RegDef_t* GpioPort, uint8_t PinNumber);
 
 
 /*
