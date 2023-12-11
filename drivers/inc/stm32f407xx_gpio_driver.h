@@ -19,15 +19,12 @@ typedef struct {
 	uint8_t PinOutputType;			// Pin Output Types: @GPIO_OTYPE
 	uint8_t PinPUpPDo;				// Pull up and Pull down options: @GPIO_PUPD
 	uint8_t PinAltFunMode;			// Alternate function written for pins 0-15
-
 }GPIO_PinConfig_t;
 
 /* GPIO handler for users to configure GPIO */
 typedef struct {
 	GPIO_RegDef_t* GPIOx_ptr;			// holds the base address of GPIO port
 	GPIO_PinConfig_t GPIOx_PinConfig;
-
-
 }GPIO_Handle_t;
 
 /*

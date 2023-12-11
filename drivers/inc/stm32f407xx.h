@@ -16,68 +16,6 @@
 #define __vo volatile  // Acronym for volatile
 
 
-
-
-
-/* base address of flash and sram memory (based off stm32f4 ref man)*/
-#define FLASH_BASE_ADDR 		0x08000000U // where cod is stored
-#define SRAM1_BASE_ADDR 		0x20000000U // 112kB capacity
-#define SRAM2_BASE_ADDR 		0x2001C000U // 16kB capacity
-#define ROM_BASE_ADDR			0x1FFF0000U // system memory
-
-
-/* base address of AHBx and APBx Peripherals */
-
-#define AHB1_BASE_ADDR			0x40020000U
-#define AHB2_BASE_ADDR			0x50000000U
-#define AHB3_BASE_ADDR			0x60000000U
-
-#define APB1_BASE_ADDR			0x40000000U
-#define APB2_BASE_ADDR			0x40010000U
-
-/* base address of GPIO peripherals (Connected to AHB1 bus) */
-#define GPIOA_BASE_ADDR			(AHB1_BASE_ADDR)		// each GPIO address is of 0x400 size
-#define GPIOB_BASE_ADDR			(AHB1_BASE_ADDR + 0x0400)
-#define GPIOC_BASE_ADDR			(AHB1_BASE_ADDR + 0x0800)
-#define GPIOD_BASE_ADDR			(AHB1_BASE_ADDR + 0x0C00)
-#define GPIOE_BASE_ADDR			(AHB1_BASE_ADDR + 0x1000)
-#define GPIOF_BASE_ADDR			(AHB1_BASE_ADDR + 0x1400)
-#define GPIOG_BASE_ADDR			(AHB1_BASE_ADDR + 0x1800)
-#define GPIOH_BASE_ADDR			(AHB1_BASE_ADDR + 0x1C00)
-#define GPIOI_BASE_ADDR			(AHB1_BASE_ADDR + 0x2000)
-
-/* Base address of I2C Peripherals (Connected to APB1 Bus) */
-#define I2C1_BASE_ADDR			(APB1_BASE_ADDR + 0x5400)
-#define I2C2_BASE_ADDR			(APB1_BASE_ADDR + 0x5800)
-#define I2C3_BASE_ADDR			(APB1_BASE_ADDR + 0x5C00)
-
-/* Base address of UART Peripherlas (Connected to APB1 Bus). Does not include all UART address. Add yourself */
-#define UART4_BASE_ADDR			(APB1_BASE_ADDR + 0x4C00U)
-#define UART5_BASE_ADDR			(APB1_BASE_ADDR + 0x5000U)
-
-
-/* Base address for SPI peripherals */
-#define SPI2_BASE_ADDR			(APB1_BASE_ADDR + 0x3800)
-#define SPI3_BASE_ADDR			(APB1_BASE_ADDR + 0x3C00)
-
-#define SPI1_BASE_ADDR			(APB2_BASE_ADDR + 0x3000)
-
-/* Base address for USART peripherals */
-#define USART2_BASE_ADDR		(APB1_BASE_ADDR + 0x4400)
-#define USART3_BASE_ADDR		(APB1_BASE_ADDR + 0x4800)
-
-#define USART1_BASE_ADDR		(APB2_BASE_ADDR + 0x1000)
-#define USART6_BASE_ADDR		(APB2_BASE_ADDR + 0x1400)
-
-/* Base address for EXTI Peripheral */
-#define EXTI_BASE_ADDR			(APB2_BASE_ADDR + 0x3C00)
-
-/* Base address for SYSCFG peripheral */
-#define SYSCFG_BASE_ADDR		(APB2_BASE_ADDR + 0x3800)
-
-/* Reset and Control Clock Registers (RCC reg) and Peripheral Clocks */
-#define RCC_BASE_ADDR			(AHB1_BASE_ADDR + 0x3800U)
-
 /* Peripheral register structure for RCC */
 typedef struct {
 	__vo uint32_t CR;  // RCC control register. Offset 0x00
@@ -149,6 +87,80 @@ typedef struct {
 	__vo uint32_t CMPCR;		// Compensation Cell Reg. 0:I/O not ready. 1: O ready. 8 and 0 bit only
 }SYSCFG_RegDef_t;
 
+/*
+ * SPI Peripheral Register structure
+ */
+typedef struct {
+	__vo uint32_t CR1;
+	__vo uint32_t CR2;
+	__vo uint32_t SR;
+	__vo uint32_t DR;
+	__vo uint32_t CRCPR;
+	__vo uint32_t RXCRCR;
+	__vo uint32_t TXCRCR;
+	__vo uint32_t I2CCFGR;
+	__vo uint32_t I2SPR;
+}SPI_RegDef_t;
+
+
+/* base address of flash and sram memory (based off stm32f4 ref man)*/
+#define FLASH_BASE_ADDR 		0x08000000U // where cod is stored
+#define SRAM1_BASE_ADDR 		0x20000000U // 112kB capacity
+#define SRAM2_BASE_ADDR 		0x2001C000U // 16kB capacity
+#define ROM_BASE_ADDR			0x1FFF0000U // system memory
+
+
+/* base address of AHBx and APBx Peripherals */
+
+#define AHB1_BASE_ADDR			0x40020000U
+#define AHB2_BASE_ADDR			0x50000000U
+#define AHB3_BASE_ADDR			0x60000000U
+
+#define APB1_BASE_ADDR			0x40000000U
+#define APB2_BASE_ADDR			0x40010000U
+
+/* base address of GPIO peripherals (Connected to AHB1 bus) */
+#define GPIOA_BASE_ADDR			(AHB1_BASE_ADDR)		// each GPIO address is of 0x400 size
+#define GPIOB_BASE_ADDR			(AHB1_BASE_ADDR + 0x0400)
+#define GPIOC_BASE_ADDR			(AHB1_BASE_ADDR + 0x0800)
+#define GPIOD_BASE_ADDR			(AHB1_BASE_ADDR + 0x0C00)
+#define GPIOE_BASE_ADDR			(AHB1_BASE_ADDR + 0x1000)
+#define GPIOF_BASE_ADDR			(AHB1_BASE_ADDR + 0x1400)
+#define GPIOG_BASE_ADDR			(AHB1_BASE_ADDR + 0x1800)
+#define GPIOH_BASE_ADDR			(AHB1_BASE_ADDR + 0x1C00)
+#define GPIOI_BASE_ADDR			(AHB1_BASE_ADDR + 0x2000)
+
+/* Base address of I2C Peripherals (Connected to APB1 Bus) */
+#define I2C1_BASE_ADDR			(APB1_BASE_ADDR + 0x5400)
+#define I2C2_BASE_ADDR			(APB1_BASE_ADDR + 0x5800)
+#define I2C3_BASE_ADDR			(APB1_BASE_ADDR + 0x5C00)
+
+/* Base address of UART Peripherlas (Connected to APB1 Bus). Does not include all UART address. Add yourself */
+#define UART4_BASE_ADDR			(APB1_BASE_ADDR + 0x4C00U)
+#define UART5_BASE_ADDR			(APB1_BASE_ADDR + 0x5000U)
+
+
+/* Base address for SPI peripherals */
+#define SPI2_BASE_ADDR			(APB1_BASE_ADDR + 0x3800)
+#define SPI3_BASE_ADDR			(APB1_BASE_ADDR + 0x3C00)
+#define SPI1_BASE_ADDR			(APB2_BASE_ADDR + 0x3000)
+
+/* Base address for USART peripherals */
+#define USART2_BASE_ADDR		(APB1_BASE_ADDR + 0x4400)
+#define USART3_BASE_ADDR		(APB1_BASE_ADDR + 0x4800)
+
+#define USART1_BASE_ADDR		(APB2_BASE_ADDR + 0x1000)
+#define USART6_BASE_ADDR		(APB2_BASE_ADDR + 0x1400)
+
+/* Base address for EXTI Peripheral */
+#define EXTI_BASE_ADDR			(APB2_BASE_ADDR + 0x3C00)
+
+/* Base address for SYSCFG peripheral */
+#define SYSCFG_BASE_ADDR		(APB2_BASE_ADDR + 0x3800)
+
+/* Reset and Control Clock Registers (RCC reg) and Peripheral Clocks */
+#define RCC_BASE_ADDR			(AHB1_BASE_ADDR + 0x3800U)
+
 
 // Note: Dereferencing random areas in memory may cause segmentation fault, which is why we () again
 #define RCC						((RCC_RegDef_t*)RCC_BASE_ADDR)
@@ -166,6 +178,10 @@ typedef struct {
 
 #define EXTI					((EXTI_RegDef_t*)EXTI_BASE_ADDR)
 #define SYSCFG					((SYSCFG_RegDef_t*)SYSCFG_BASE_ADDR)
+
+#define SPI1					((SPI_RegDef_t*)SPI1_BASE_ADDR)
+#define SPI2					((SPI_RegDef_t*)SPI2_BASE_ADDR)
+#define SPI3					((SPI_RegDef_t*)SPI3_BASE_ADDR)
 
 
 /*
@@ -257,8 +273,43 @@ typedef struct {
 #define SYSCFEN_PCLK_DI()				(RCC->APB2ER &= (0 << 14))
 
 /*
- * SYSCFG_EXTIx Macros the lines each supports
+ * SPI Control Register 1 Fields
  */
+#define SPI_CR1_BIDIMODE				15	// Bidirectional Mode
+#define SPI_CR1_BIDIOE					14  // Output enable in bidirectional mode
+#define SPI_CR1_DFF						11  // Data Frame Format
+#define SPI_CR1_RXONLY					10  // Receive Only
+#define SPI_CR1_SSM						9	// Software Slave management
+#define SPI_CR1_LSBFIRST				7	// Frame Format
+#define SPI_CR1_SPE						6	// SPI enable
+#define SPI_CR1_BR						5	// Baud Rate Control
+#define SPI_CR1_MSTR					2	// Device Selection: (Master/Slave)
+#define SPI_CR1_CPOL					1	// Clock Polarity
+#define SPI_CR1_CPHA					0	// Clock Phase
+
+/*
+ * SPI Control Register 2 Fields
+ */
+#define SPI_CR2_TXEIE					7  // Tx Buffer empty interrupt Enable. 0: Masked, 1: Unmasked
+#define SPI_CR2_RXNEIE					6  // Rx buffer NOT empty interrupt enable
+#define SPI_CR2_ERRIE					5  // Error Interrupt Enable
+#define SPI_CR2_FRF						4  // Frame Format. 0: SPI Motorola Mode, 1: SPI TI Mode
+#define SPI_CR2_SSOE					2  // Slave Select output enable
+#define SPI_CR2_TXDNAEN					1  // Tx buffer Direct Memory Access (DMA) enable
+#define SPI_CR2_RXDMAEN					0  // Rx buffer DMA enable
+
+/* @SPI_STATUS_FIELD
+ * SPI Status Register: Status are set by by the MCU
+ */
+#define SPI_SR_FRE						8  // Frame Format error. 0: No error. 1: FF error occurred
+#define SPI_SR_BSY						7  // 0: SPI not busy. 1: SPI is busy or Tx is not empty
+#define SPI_SR_OVR						6  // Overrun
+#define SPI_SR_MODF						5  // Mode fault
+#define SPI_SR_CRCERR					4  // CRC Error flag
+#define SPI_SR_UDR						3  // Underrun flag
+#define SPI_SR_CHSIDE					2  // Channel Side
+#define SPI_SR_TXE						1  // Tx buffer 0: not empty. 1: empty
+#define SPI_SR_RXNE						0  // Rx Buffer 0: not empty. 1: empty
 
 
 /* Other macros and Enumerations */
@@ -266,6 +317,7 @@ typedef struct {
 #define ENABLE							(1)
 #define RESET							(DISABLE)
 #define SET								(ENABLE)
+#define NOT_SET							(DISABLE)
 
 
 #endif /* INC_STM32F407XX_H_ */

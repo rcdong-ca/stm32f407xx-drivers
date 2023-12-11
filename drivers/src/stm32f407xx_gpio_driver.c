@@ -49,6 +49,10 @@ uint8_t GPIO_PortToNumber(GPIO_RegDef_t* GPIOx_ptr) {
  * 	GPIOx_Handle: User provided Handler that contains their GPIO configurations
  */
 void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
+
+	// Enable Peripheral Clock
+	GPIO_PCLKControl(GPIOx_Handle, ENABLE);
+
 	GPIO_PinConfig_t* PinConfig_ptr = &(GPIOx_Handle->GPIOx_PinConfig);
 	GPIO_RegDef_t* GPIOx_ptr = GPIOx_Handle->GPIOx_ptr;
 	uint32_t temp = 0;	// registers are of 32bit but values in PinConfig_t may be less
@@ -127,6 +131,8 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
  * GPIO De-Initialization: Reset the registers for a GPIO port by placing it in reset state and not reset state
  */
 void GPIO_DeInit(GPIO_Handle_t* GPIOx_Handler) {
+
+	GPIO_PCLKControl(GPIOx_Handler, DISABLE);
 
 	GPIO_RegDef_t* GPIOx_ptr = GPIOx_Handler->GPIOx_ptr;
 	if (GPIOx_ptr == GPIOA) {
