@@ -257,20 +257,20 @@ typedef struct {
 /*
  * Clock Enable/Disable Macros for USARTx Peripherals
  */
-#define USART1_PCLK_EN()				(RCC->APB2ER |= (1 << 4))
-#define USART2_PCLK_EN()				(RCC->APB1ER |= (1 << 17))
-#define USART3_PCLK_EN()				(RCC->APB1ER |= (1 << 18))
-#define USART6_PCLK_EN()				(RCC->APB2ER |= (1 << 5))
-#define USART1_PCLK_DI()				(RCC->APB2ER &= (0 << 4))
-#define USART2_PCLK_DI()				(RCC->APB1ER &= (0 << 17))
-#define USART3_PCLK_DI()				(RCC->APB1ER &= (0 << 18))
-#define USART6_PCLK_DI()				(RCC->APB2ER &= (0 << 5))
+#define USART1_PCLK_EN()				(RCC->APB2ENR |= (1 << 4))
+#define USART2_PCLK_EN()				(RCC->APB1ENR |= (1 << 17))
+#define USART3_PCLK_EN()				(RCC->APB1ENR |= (1 << 18))
+#define USART6_PCLK_EN()				(RCC->APB2ENR |= (1 << 5))
+#define USART1_PCLK_DI()				(RCC->APB2ENR &= (0 << 4))
+#define USART2_PCLK_DI()				(RCC->APB1ENR &= (0 << 17))
+#define USART3_PCLK_DI()				(RCC->APB1ENR &= (0 << 18))
+#define USART6_PCLK_DI()				(RCC->APB2ENR &= (0 << 5))
 
 /*
  * Clock Enable/Disable Macro for System Configuration
  */
-#define SYSCFEN_PCLK_EN()				(RCC->APB2ER |= (1 << 14))
-#define SYSCFEN_PCLK_DI()				(RCC->APB2ER &= (0 << 14))
+#define SYSCFG_PCLK_EN()				(RCC->APB2ENR |= (1 << 14))
+#define SYSCFG_PCLK_DI()				(RCC->APB2ENR &= (0 << 14))
 
 /*
  * SPI Control Register 1 Fields
@@ -280,6 +280,7 @@ typedef struct {
 #define SPI_CR1_DFF						11  // Data Frame Format
 #define SPI_CR1_RXONLY					10  // Receive Only
 #define SPI_CR1_SSM						9	// Software Slave management
+#define SPI_CR1_SSI						8	// Internal Slave select. Effect only when SSM is set
 #define SPI_CR1_LSBFIRST				7	// Frame Format
 #define SPI_CR1_SPE						6	// SPI enable
 #define SPI_CR1_BR						5	// Baud Rate Control

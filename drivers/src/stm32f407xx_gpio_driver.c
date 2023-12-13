@@ -64,18 +64,6 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 		GPIOx_ptr->MODER &= ~(0x3 << (PinConfig_ptr->PinNumber * 2) );
 		GPIOx_ptr->MODER |= temp;
 
-		if (PinConfig_ptr->PinMode == GPIO_MODE_OUT) {
-			// 1. Configure the output speed
-			temp = PinConfig_ptr->PinOutputSpeed << (PinConfig_ptr->PinNumber * 2);
-			GPIOx_ptr->OSPEEDR &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
-			GPIOx_ptr->OSPEEDR |= temp;
-
-			// 3. configure the output type
-			temp = PinConfig_ptr->PinOutputType << (PinConfig_ptr->PinNumber);
-			GPIOx_ptr->OTYPER &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
-			GPIOx_ptr->OTYPER |= temp;
-		}
-
 	}
 	else {
 		// Interrupt Mode still require pins to be in Input mode
@@ -98,19 +86,27 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 			EXTI->RTSR |= (1 << PinConfig_ptr->PinNumber);
 			EXTI->FTSR |= (1 << PinConfig_ptr->PinNumber);
 		}
-		else {
-			// INVALID MODE:: LOG Invalid!
-		}
-		// Unmask the line so processor can see the interrupt
-		EXTI->IMR |=  (1 << PinConfig_ptr->PinNumber);
 
 		// configure the EXTI control on which pin the interrupt will be coming from
 		uint8_t RegNum = PinConfig_ptr->PinNumber / 4;		// Each Reg accounts for 4 pins
 		uint8_t GPIO_PortNum = GPIO_PortToNumber(GPIOx_ptr);
+		SYSCFG_PCLK_EN();
 		SYSCFG->EXTICR[RegNum] &= ~(GPIO_PortNum << (GPIO_PortNum % 4) );
 		SYSCFG->EXTICR[RegNum] |= (GPIO_PortNum << (GPIO_PortNum % 4) );
 
+		// Unmask the line so processor can see the interrupt
+		EXTI->IMR |=  (1 << PinConfig_ptr->PinNumber);
+
 	}
+	// Configure the output speed
+	temp = PinConfig_ptr->PinOutputSpeed << (PinConfig_ptr->PinNumber * 2);
+	GPIOx_ptr->OSPEEDR &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
+	GPIOx_ptr->OSPEEDR |= temp;
+
+	// configure the output type
+	temp = PinConfig_ptr->PinOutputType << (PinConfig_ptr->PinNumber);
+	GPIOx_ptr->OTYPER &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
+	GPIOx_ptr->OTYPER |= temp;
 
 	// Configure the pupd settings
 	temp = PinConfig_ptr->PinPUpPDo << (PinConfig_ptr->PinNumber * 2);
