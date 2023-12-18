@@ -77,8 +77,8 @@ typedef struct {
 /*
  * @ SPI_DFF		Data frame format.
  */
-#define SPI_DFF_8BITS					8
-#define SPI_DFF_16BITS					16
+#define SPI_DFF_8BITS					0
+#define SPI_DFF_16BITS					1
 
 /*
  * Reset SPIx Peripherals
@@ -127,6 +127,16 @@ void SPI_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
  */
 
 void SPI_PCLKControl(SPI_Handle_t* SPIx_Handler, uint8_t En_Di);  // Peripheral Clock controller
+
+/*
+ * SSI bit Configuration (Used when @SSM is set; Software NSS management)
+ */
+void SPI_SSIConfig(SPI_RegDef_t* SPIx_ptr, uint8_t En_Di);
+
+/*
+ * SSOE (Slave select output enable) bit. Used
+ */
+void SPI_SSOIConfig(SPI_RegDef_t* SPIx_ptr, uint8_t En_Di);
 
 /***************************** SPI API End **************************************/
 
