@@ -113,7 +113,7 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 	GPIOx_ptr->PUPDR &= ~(0x3 << PinConfig_ptr->PinNumber * 2);
 	GPIOx_ptr->PUPDR |= temp;
 
-	// 5. configure the alt functionality, if set to alt mode
+	// configure the alt functionality, if set to alt mode
 	if (PinConfig_ptr->PinMode == GPIO_MODE_ALTFUN) {
 		uint32_t alt_idx = PinConfig_ptr->PinNumber / 8;
 		temp = PinConfig_ptr->PinAltFunMode << ( (PinConfig_ptr->PinNumber % 8) * 4);
