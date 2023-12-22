@@ -41,7 +41,7 @@ int main(void) {
 	// IRQ Configurations
 	NVIC_RegDef_t NvicCtrl;
 	NVIC_CtrlInit(&NvicCtrl);
-	GPIO_IRQPriorityConfig(&NvicCtrl, IRQ_NO_EXTI0, 15);
+	GPIO_IRQPriorityConfig(&NvicCtrl, IRQ_NO_EXTI0, 15); // Priority 15. MCU support 16 levels only
 	GPIO_IRQInterruptConfig(&NvicCtrl, IRQ_NO_EXTI0, ENABLE);
 
 	while(1);

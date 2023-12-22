@@ -11,6 +11,7 @@
 #include "stm32f407xx_spi_driver.h"
 
 #include <string.h>
+#include <stdio.h>
 
 /*
  * SPI2 uses GPIOB.
@@ -25,6 +26,7 @@ void SPI_GpioInit() {
 
 	GPIO_Handle_t Gpio_SpiPins;
 	Gpio_SpiPins.GPIOx_ptr = GPIOB;
+	Gpio_SpiPins.GPIOx_PinConfig.PinMode = GPIO_MODE_ALTFUN;
 	Gpio_SpiPins.GPIOx_PinConfig.PinAltFunMode = 5;
 	Gpio_SpiPins.GPIOx_PinConfig.PinOutputSpeed = GPIO_OSPEED_MED;
 	Gpio_SpiPins.GPIOx_PinConfig.PinOutputType = GPIO_OTYPE_PP;
@@ -61,14 +63,18 @@ int main() {
 	SPI2Handle.SPIx_Config.CPHA = SPI_CHPA_LOW;
 	SPI2Handle.SPIx_Config.CPOL = SPI_CPOL_LOW;
 	SPI2Handle.SPIx_Config.SSM = SPI_SSM_EN;
-	SPI2Handle.SPIx_Config.DFF = SPI_DFF_8BITS;
+	SPI2Handle.SPIx_Config.DFF = SPI_DFF_16BITS;
+	SPI2Handle.SPIx_Config.DeviceMode = SPI_DEVICE_MODE_MASTER;
 
 	SPI_Init(&SPI2Handle);
+	SPI_SSIConfig(SPI2Handle.SPIx_ptr, ENABLE);
+
 	SPI_PControl(SPI2Handle.SPIx_ptr, ENABLE);
+
 	SPI_Send(&SPI2Handle, (uint8_t*)TxBuffer, strlen(TxBuffer));
 
 
-
+	while(1);
 
 	return 0;
 }
