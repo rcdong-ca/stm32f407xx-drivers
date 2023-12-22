@@ -27,6 +27,14 @@ typedef struct {
 typedef struct {
 	SPI_Config_t SPIx_Config;
 	SPI_RegDef_t* SPIx_ptr;
+	// Full duplex support
+	uint8_t* TxBuffer_ptr;
+	uint32_t TxBufferLen;
+	uint8_t TxState;
+
+	uint8_t* RxBuffer_ptr;
+	uint32_t RxBufferLen;
+	uint8_t RxState;
 }SPI_Handle_t;
 
 /*
@@ -88,6 +96,14 @@ typedef struct {
 #define SPI3_RESET()				{RCC->APB1RSTR |= (1 << 15); RCC->APB2RSTR &= ~(1 << 15); }
 
 
+/*
+ * @SPI_STATE SPI Application States
+ */
+#define SPI_STATE_READY					0
+#define SPI_STATE_BUSY_RX				1	// In process of Receiving data
+#define SPI_STATE_BUSY_TX				2   // In process of Sending Data
+
+
 /***************************** SPI API Start **************************************/
 
 /*
@@ -108,6 +124,13 @@ void SPI_Send(SPI_Handle_t* SPIx_Handler, uint8_t* TxBuffer_ptr, uint32_t DataSi
 void SPI_Receive(SPI_Handle_t* SPIx_Handler, uint8_t* RxBuffer_ptr, uint32_t DataSize);
 
 /*
+ * Send and Receive Data with Interrupt Mode ( Non blocking )
+ */
+void SPI_Send_Int(SPI_Handle_t* SPIx_Handler, uint8_t* TxBuffer_ptr, uint32_t DataSize);
+void SPI_Receive_Int(SPI_Handle_t* SPIx_Handler, uint8_t* RxBuffer_ptr, uint32_t DataSize);
+
+
+/*
  * Get SPI status register info.
  * Return:
  * 	SET (1) or NOT_SET(0)
@@ -120,7 +143,7 @@ uint8_t SPI_GetStatus(SPI_RegDef_t* SPIx_ptr, uint8_t StatusField);
 
 void SPI_IRQInterruptConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t EN_DI);	// Interrupt requests configuration
 void SPI_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t IRQPriority);
-//void SPI_IRQHandling(uint8_t PinNumber);
+void SPI_IRQHandling(SPI_Handle_t* SpiHandler_ptr);
 
 /*
  * Peripheral Clock controller
@@ -137,6 +160,18 @@ void SPI_SSIConfig(SPI_RegDef_t* SPIx_ptr, uint8_t En_Di);
  * SSOE (Slave select output enable) bit. Used
  */
 void SPI_SSOIConfig(SPI_RegDef_t* SPIx_ptr, uint8_t En_Di);
+
+/*
+ * Overrun Flag handling
+ */
+void SPI_ClearOVRFlag(SPI_Handle_t* SpiHandler);
+void SPI_CloseTransmission(SPI_Handle_t* SpiHandler);
+void SPI_CloseReception(SPI_Handle_t* SpiHandler);
+
+/*
+ * User application Call back for interrupt event. Can be overwritten
+ */
+void SPI_ApplicationEventCallBack(SPI_Handle_t* SpiHandle, uint8_t AppEvent);
 
 /***************************** SPI API End **************************************/
 
