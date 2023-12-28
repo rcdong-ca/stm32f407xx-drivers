@@ -60,7 +60,6 @@ void GPIO_Init(GPIO_Handle_t* GPIOx_Handle) {
 	// 1. configure mode of GPIO pin.
 	if (PinConfig_ptr->PinMode <= GPIO_MODE_ANALOG) { // not Interrupt modes
 		temp = PinConfig_ptr->PinMode << (PinConfig_ptr->PinNumber * 2);
-//		// bitfield may already have values, clear it
 		GPIOx_ptr->MODER &= ~(0x3 << (PinConfig_ptr->PinNumber * 2) );
 		GPIOx_ptr->MODER |= temp;
 

@@ -22,13 +22,13 @@
  * GPIO pins uses Alternating Functions 5
  */
 
-void SPI_GpioInit() {
+void SPI2_GpioInits() {
 
 	GPIO_Handle_t Gpio_SpiPins;
 	Gpio_SpiPins.GPIOx_ptr = GPIOB;
 	Gpio_SpiPins.GPIOx_PinConfig.PinMode = GPIO_MODE_ALTFUN;
 	Gpio_SpiPins.GPIOx_PinConfig.PinAltFunMode = 5;
-	Gpio_SpiPins.GPIOx_PinConfig.PinOutputSpeed = GPIO_OSPEED_MED;
+	Gpio_SpiPins.GPIOx_PinConfig.PinOutputSpeed = GPIO_OSPEED_HIGH;
 	Gpio_SpiPins.GPIOx_PinConfig.PinOutputType = GPIO_OTYPE_PP;
 	Gpio_SpiPins.GPIOx_PinConfig.PinPUpPDo = GPIO_PUPD_NO;
 
@@ -49,32 +49,42 @@ void SPI_GpioInit() {
 	GPIO_Init(&Gpio_SpiPins);
 }
 
+
+
 int main() {
 
-	char TxBuffer[] = "Hello World!";
-
-	SPI_GpioInit();
-
-	// SPI Initialization
-	SPI_Handle_t SPI2Handle;
-	SPI2Handle.SPIx_ptr = SPI2;
-	SPI2Handle.SPIx_Config.BR = SPI_SCLK_BR_DIV2; // 8MHz
-	SPI2Handle.SPIx_Config.BusConfig = SPI_BUS_FULL_DUPLEX;
-	SPI2Handle.SPIx_Config.CPHA = SPI_CHPA_LOW;
-	SPI2Handle.SPIx_Config.CPOL = SPI_CPOL_LOW;
-	SPI2Handle.SPIx_Config.SSM = SPI_SSM_EN;
-	SPI2Handle.SPIx_Config.DFF = SPI_DFF_16BITS;
-	SPI2Handle.SPIx_Config.DeviceMode = SPI_DEVICE_MODE_MASTER;
-
-	SPI_Init(&SPI2Handle);
-	SPI_SSIConfig(SPI2Handle.SPIx_ptr, ENABLE);
-
-	SPI_PControl(SPI2Handle.SPIx_ptr, ENABLE);
-
-	SPI_Send(&SPI2Handle, (uint8_t*)TxBuffer, strlen(TxBuffer));
 
 
-	while(1);
+	char user_data[] = "Hello world";
+
+		//this function is used to initialize the GPIO pins to behave as SPI2 pins
+		SPI2_GpioInits();
+
+		//This function is used to initialize the SPI2 peripheral parameters
+		SPI_Handle_t SPI2handle;
+
+			SPI2handle.SPIx_ptr = SPI2;
+			SPI2handle.SPIx_Config.BusConfig = SPI_BUS_FULL_DUPLEX;
+			SPI2handle.SPIx_Config.DeviceMode = SPI_DEVICE_MODE_MASTER;
+			SPI2handle.SPIx_Config.BR = SPI_SCLK_BR_DIV2;//generates sclk of 8MHz
+			SPI2handle.SPIx_Config.DFF = SPI_DFF_8BITS;
+			SPI2handle.SPIx_Config.CPOL = SPI_CPOL_HIGH;
+			SPI2handle.SPIx_Config.CPHA = SPI_CPHA_LOW;
+			SPI2handle.SPIx_Config.SSM = SPI_SSM_EN; //software slave management enabled for NSS pin
+
+			SPI_Init(&SPI2handle);
+
+		//this makes NSS signal internally high and avoids MODF error
+		SPI_SSIConfig(SPI2,ENABLE);
+
+		//enable the SPI2 peripheral
+		SPI_PControl(SPI2,ENABLE);
+
+		//to send data
+		SPI_Send(&SPI2handle,(uint8_t*)user_data,strlen(user_data));
+
+
+		while(1);
 
 	return 0;
 }

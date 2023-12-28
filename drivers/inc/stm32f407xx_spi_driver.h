@@ -55,8 +55,8 @@ typedef struct {
 /*
  * @CPHA	Clock Phase
  */
-#define	SPI_CHPA_LOW					0	// First (Rising/Falling) Edge Sampled
-#define SPI_CHPA_HIGH					1	// Second Edge Sampled
+#define	SPI_CPHA_LOW					0	// First (Rising/Falling) Edge Sampled
+#define SPI_CPHA_HIGH					1	// Second Edge Sampled
 
 /*
  * @CPOL	Clock Polarity

@@ -98,13 +98,15 @@ void SPI_Send(SPI_Handle_t* SPIx_Handler, uint8_t* TxBuffer_ptr, uint32_t DataSi
 		// 8 bit data format
 		if ( ((SPIx_Handler->SPIx_ptr->CR1 >> SPI_CR1_DFF) & 0x1 ) == SPI_DFF_8BITS) {
 			// Write in to Data Register
-			SPIx_Handler->SPIx_ptr->DR = TxBuffer_ptr[CurrStep];
+			SPIx_Handler->SPIx_ptr->DR = *TxBuffer_ptr;
+			TxBuffer_ptr++;
 			CurrStep++;
 
 		}
 		else {
 			// Combine two uint8_t into uint16_t
-			SPIx_Handler->SPIx_ptr->DR = *(uint16_t*)(&TxBuffer_ptr[CurrStep]);
+			SPIx_Handler->SPIx_ptr->DR = *(uint16_t*)TxBuffer_ptr;
+			(uint16_t*)TxBuffer_ptr++;
 			CurrStep += 2;
 		}
 
