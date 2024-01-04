@@ -50,6 +50,7 @@ void I2C_PCLKControl(I2C_Handle_t* I2Cx_Handler, uint8_t En_Di) {
  */
 void I2C_Init(I2C_Handle_t* I2Cx_Handler) {
 
+	uint8_t TRise = 0;
 	// we want to reset the register
 	uint32_t TempReg = 0;
 
@@ -93,8 +94,17 @@ void I2C_Init(I2C_Handle_t* I2Cx_Handler) {
 		}
 	}
 	TempReg |= ( (CCRValue & 0xFFF) << I2C_CCR_CCR);  // Keep only 12 bits of CCR value
+	I2Cx_Handler->I2Cx_ptr->CCR = TempReg;
 
 	// Configure the TRISE register
+	if (I2Cx_Handler->I2Cx_Config.SCLSpeed <= I2C_SCL_SPEED_SM) {
+		TempReg = (RCC_GetPCLK1Value() / 1000000U) + 1;
+	}
+	else {
+		TempReg = RCC_GetPCLK1Value() * 300 / 1000000000U + 1;
+	}
+	TempReg |= ( (CCRValue & 0x3F) );
+	I2Cx_Handler->I2Cx_ptr->TRISE = TempReg;
 }
 
 void I2C_DeInit(I2C_Handle_t* I2Cx_Handler) {
