@@ -18,7 +18,7 @@ typedef struct {
 	uint8_t PinOutputSpeed;			// Pin Output Speeds: @GPIO_OSPEED
 	uint8_t PinOutputType;			// Pin Output Types: @GPIO_OTYPE
 	uint8_t PinPUpPDo;				// Pull up and Pull down options: @GPIO_PUPD
-	uint8_t PinAltFunMode;			// Alternate function written for pins 0-15
+	uint8_t PinAltFunMode;			// AF# written for pins 0-15
 }GPIO_PinConfig_t;
 
 /* GPIO handler for users to configure GPIO */
