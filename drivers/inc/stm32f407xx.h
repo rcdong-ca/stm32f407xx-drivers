@@ -203,8 +203,9 @@ typedef struct {
 #define I2C3					((I2C_RegDef_t*)I2C3_BASE_ADDR)
 
 /*
- * IRQ (Interrupt Requests) Interrupt Position/Number of NVIC EXTI lines
+ * IRQ (Interrupt Requests) Interrupt Position/Number
  */
+// External Interrupt Controller lines
 #define IRQ_NO_EXTI0						6
 #define IRQ_NO_EXTI1						7
 #define IRQ_NO_EXTI2						8
@@ -212,6 +213,14 @@ typedef struct {
 #define IRQ_NO_EXTI4						10
 #define IRQ_NO_EXTI9_5						23
 #define IRQ_NO_EXTI15_10					40
+
+// I2C IRQ Positions
+#define IRQ_NO_I2C1_EV						31
+#define IRQ_NO_I2C1_ER						32
+#define IRQ_NO_I2C2_EV						33
+#define IRQ_NO_I2C2_ER						34
+#define IRQ_NO_I2C3_EV						79
+#define IRQ_NO_I2C3_ER						80
 
 /*
  * IRQ Priority Levels/Value. 16 Programmable levels used for NVIC_IPR_REG
