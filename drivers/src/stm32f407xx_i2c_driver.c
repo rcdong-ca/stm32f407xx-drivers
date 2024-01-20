@@ -5,7 +5,10 @@
  *      Author: richard
  */
 
+
+
 #include "stm32f407xx_i2c_driver.h"
+#include <stddef.h>
 
 
 /*
@@ -25,13 +28,49 @@ static uint8_t I2C_Get_IT_Flag(I2C_RegDef_t* I2Cx_ptr, uint8_t StatusField) {
 }
 
 // Handle Ack
-static uint8_t I2C_Ack_Control(I2C_RegDef_t* I2Cx_ptr, uint8_t En_Di) {
+static void I2C_Ack_Control(I2C_RegDef_t* I2Cx_ptr, uint8_t En_Di) {
 	if (En_Di == ENABLE) {
 		I2Cx_ptr->CR1 |= (1 << I2C_CR1_ACK);
 	}
 	else if (En_Di == DISABLE) {
 		I2Cx_ptr->CR1 &= ~(1 << I2C_CR1_ACK);
 	}
+}
+
+void I2C_Close_Rx(I2C_Handle_t *I2Cx_Handler)
+{
+	// Disable ITBUFEN Bit in CR2
+	I2Cx_Handler->I2Cx_ptr->CR2 &= ~( 1 << I2C_CR2_ITBUFEN);
+
+	//Disable ITEVFEN Bit in CR2
+	I2Cx_Handler->I2Cx_ptr->CR2 &= ~( 1 << I2C_CR2_ITEVTEN);
+
+	I2Cx_Handler->State = I2C_STATE_READY;
+	I2Cx_Handler->RxBuffer = NULL;
+	I2Cx_Handler->RxLen = 0;
+	I2Cx_Handler->RxSize = 0;
+
+	// Re-enable ACK if enabled
+	if(I2Cx_Handler->I2Cx_Config.ACKControl == ENABLE)
+	{
+		I2C_Ack_Control(I2Cx_Handler->I2Cx_ptr, ENABLE);
+	}
+
+}
+
+void I2C_Close_Tx(I2C_Handle_t *I2Cx_Handler)
+{
+	// Disable ITBUFEN in CR2
+	I2Cx_Handler->I2Cx_ptr->CR2 &= ~( 1 << I2C_CR2_ITBUFEN);
+	// Implement the code to disable ITEVFEN Control Bit
+	I2Cx_Handler->I2Cx_ptr->CR2 &= ~( 1 << I2C_CR2_ITEVTEN);
+	I2Cx_Handler->State = I2C_STATE_READY;
+	I2Cx_Handler->TxBuffer = NULL;
+	I2Cx_Handler->TxLen = 0;
+}
+
+void I2C_ApplicationEventCallBack(I2C_Handle_t* I2Cx_Handler, uint8_t AppEvent) {
+
 }
 
 /*
@@ -85,6 +124,14 @@ static void I2C_Master_RXNE_ITEV_Handle(I2C_Handle_t* I2Cx_Handler) {
 
 static void I2C_Master_TXE_ITEV_Handle(I2C_Handle_t* I2Cx_Handler) {
 
+	if (I2Cx_Handler->State == I2C_STATE_TX_BUSY) {
+		if (I2Cx_Handler->TxLen > 0) {
+			// Place data from Tx Buffer into DR
+			I2Cx_Handler->I2Cx_ptr->DR = *(I2Cx_Handler->TxBuffer);
+			I2Cx_Handler->TxBuffer++;
+			I2Cx_Handler->TxLen--;
+		}
+	}
 }
 
 /*
@@ -236,15 +283,15 @@ void I2C_MasterSendData(I2C_Handle_t* I2Cx_Handler, uint8_t* TxBuffer_ptr, uint3
 	while ( I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_ADDR) == NOT_SET );
 
 	// Clear the Addr bit by reading SR1 and Sr2
-	I2C_Clear_Addr_Flag(I2Cx_Handler->I2Cx_ptr);
+	I2C_Clear_Addr_Flag(I2Cx_Handler);
 
 	// Data Phase: Send Data
 	while (TxLen > 0) {
 		// wait for Data Register to be empty
 		while (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_TxE) == NOT_SET);
-		I2Cx_Handler->I2Cx_ptr->DR = I2Cx_Handler->
-		TxBuffer_ptr++;
-		TxLen--;
+		I2Cx_Handler->I2Cx_ptr->DR = *I2Cx_Handler->TxBuffer;
+		I2Cx_Handler->TxBuffer++;
+		I2Cx_Handler->TxLen--;
 	}
 
 	// Wait for TxE=1 and BTF=1 (Program Stop). SCL is pulled low
@@ -297,7 +344,7 @@ void I2C_MasterReceiveData(I2C_Handle_t* I2Cx_Handler, uint8_t* RxBuffer, uint32
 	// 1 < x Byte Data Reception
 	else if (Len > 1) {
 		// Clear ADDR flag
-		I2C_Clear_Addr_Flag(I2Cx_Handler->I2Cx_ptr);
+		I2C_Clear_Addr_Flag(I2Cx_Handler);
 
 		while (Len > 0) {
 			// wait for RXNE bit to be set (DR has data)
@@ -424,26 +471,36 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 	 }
 	 // ADDR flag event. Trigger for both send and receive
 	 else if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_ADDR) == SET) {
-		 I2C_Clear_Addr_Flag(I2Cx_Handler->I2Cx_ptr);
+		 I2C_Clear_Addr_Flag(I2Cx_Handler);
 	 }
 
 	 // Buffer event has to be enabled
 
 	 else if (I2C_Get_IT_Flag(I2Cx_Handler->I2Cx_ptr, I2C_CR2_ITBUFEN) == SET) {
 		 // RxNE Flag: Data has arrived in DR
-		 if (I2C_Get_Status1(I2C_Handler->I2Cx_ptr, I2C_SR1_RxNE) == SET) {
+		 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_RxNE) == SET) {
 			 // Check Device in Master: 1 or Slave:0 mode
 			 if (I2C_GetStatus2(I2Cx_Handler->I2Cx_ptr, I2C_SR2_MSL) == I2C_DEVICE_MODE_MASTER) {
 				 I2C_Master_RXNE_ITEV_Handle(I2Cx_Handler);
 			 }
 			 else {
-				I2C_Slave_RXNE_ITEV_Handle(I2Cx_Handler);
+				 // TODO: SLAVE RESPONSE TO RXNE FLAG
+				 // I2C_Slave_RXNE_ITEV_Handle(I2Cx_Handler);
 			 }
 
 		 }
 		 // TxE flag event
 		 else if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_TxE) == SET) {
-			 // write data into DR
+			 // Master and Slave will have different responses to flag
+			 uint8_t DevMode = I2C_GetStatus2(I2Cx_Handler->I2Cx_ptr, I2C_SR2_MSL);
+			 // Master Txe Flag response:
+			 if (DevMode == I2C_DEVICE_MODE_MASTER) {
+				 I2C_Master_TXE_ITEV_Handle(I2Cx_Handler);
+			 }
+			 else if (DevMode == I2C_DEVICE_MODE_SLAVE) {
+				 // TODO:: I2C_SLAVE MODE RESPONSE FOR TXE
+
+			 }
 		 }
 	 }
 	 // STOPF Flag event.
@@ -467,23 +524,54 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 			 if (I2C_GetStatus1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_TxE) && I2Cx_Handler->TxLen == 0) {
 				 if (I2Cx_Handler->RS != DISABLE) {
 					 // Generate Stop Condition only if repeated start is disabled
-					 I2Cx_Handler->I2Cx_ptr |= (1 << I2C_CR1_STOP);
+					 I2Cx_Handler->I2Cx_ptr->CR1 |= (1 << I2C_CR1_STOP);
 				 }
 				 // Reset all the handle structure elements.
-				 I2C_Close_Trasmission(I2Cx_Handler);
-				 // Notify Application of transmission completion
-				 I2C_ApplicationEventCallback(I2Cx_Handler, I2C_ITEV_TX_CMPLT);
+					I2C_Close_Tx(I2Cx_Handler);
+					I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ITEV_TX_CMPLT);
 			 }
+		 }
+	 }
+ }
+
+
+
+ void I2C_ER_IRQHandling(I2C_Handle_t* I2Cx_Handler) {
+
+	 // Buss Error
+	 if (I2C_GetStatus1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_BERR) == SET) {
+
+		 // Data line is not released. Up to user to what should happen
+		 // Clear BERR flag
+		 I2Cx_Handler->I2Cx_ptr->SR1 &= ~(1 << I2C_SR1_BERR);
+
+		// Notify User to handle Error
+		I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ERR_BERR);
+	 }
+	 // Acknowledge Failure
+	 if (I2C_GetStatus1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_AF) == SET) {
+		 // Clear AF flag
+		 I2Cx_Handler->I2Cx_ptr->SR1 &= ~(1 << I2C_SR1_AF);
+		 // Notify User. User should decide to generate Stop or Repeated Start
+		 I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ERR_AF);
 	 }
 
-}
+	 // Arbitration Lost
+	 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_ARLO) == SET) {
+		 // Clear the ARLO flag
+		 I2Cx_Handler->I2Cx_ptr->SR1 &= ~(1 << I2C_SR1_ARLO);
+		 // Notify the user
+		 I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ERR_ARLO);
+	 }
 
- void I2C_ER_IRQHandling() {
-
+	 // Overrun/Underrun Error
+	 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_OVR)) {
+		 // Clear the the flag
+		 I2Cx_Handler->I2Cx_ptr->SR1 &= ~(1<<I2C_SR1_OVR);
+		 // Notify the User
+		 I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ERR_OVR);
+	 }
  }
 
- __attribute__((weak)) void I2C_ApplicationEventCallBack(I2C_Handle_t* I2cHandler, uint8_t AppEvent) {
- 	// Weak Implementation. User should override this function
- }
 
 

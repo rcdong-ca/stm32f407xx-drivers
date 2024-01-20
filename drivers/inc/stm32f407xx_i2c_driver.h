@@ -70,6 +70,14 @@ typedef struct {
 #define I2C_ITEV_RX_CMPLT				2
 
 
+/*
+ * @I2C error
+ */
+#define I2C_ERR_BERR					3
+#define I2C_ERR_AF						4
+#define I2C_ERR_ARLO					5
+#define I2C_ERR_OVR						6
+
 /* ************************************ I2C API Functions ********************************/
 
 void I2C_Init(I2C_Handle_t* I2Cx_Handler);
@@ -125,13 +133,17 @@ uint8_t I2C_MasterSendDataIT(I2C_Handle_t* I2Cx_Handler, uint8_t* TxBuffer_ptr, 
 /*
  * User application Call back for interrupt event. Can be overwritten
  */
-void I2C_ApplicationEventCallBack(I2C_Handle_t* I2CHandle, uint8_t AppEvent);
+void I2C_ApplicationEventCallBack(I2C_Handle_t* I2Cx_Handler, uint8_t AppEvent);
 
 /*
  * Peripheral Clock controller
  */
 
 void I2C_PCLKControl(I2C_Handle_t* I2Cx_Handler, uint8_t En_Di);  // Peripheral Clock controller
+
+
+void I2C_Close_Rx(I2C_Handle_t *I2Cx_Handler);
+void I2C_Close_Tx(I2C_Handle_t *I2Cx_Handler);
 
 /*
  * Reset I2C Peripheral to default state
