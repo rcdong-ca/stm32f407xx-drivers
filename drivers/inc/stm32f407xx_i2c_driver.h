@@ -68,15 +68,18 @@ typedef struct {
 #define I2C_ITEV_STOP_CMPLT				0
 #define I2C_ITEV_TX_CMPLT				1
 #define I2C_ITEV_RX_CMPLT				2
+// Slave Event Flags
+#define I2C_ITEV_SLAVE_TXE				3
+#define I2C_ITEV_SLAVE_RXNE				4
 
 
 /*
- * @I2C error
+ * @I2C error flags. From SR1
  */
-#define I2C_ERR_BERR					3
-#define I2C_ERR_AF						4
-#define I2C_ERR_ARLO					5
-#define I2C_ERR_OVR						6
+#define I2C_ERR_BERR					1
+#define I2C_ERR_AF						2
+#define I2C_ERR_ARLO					3
+#define I2C_ERR_OVR						4
 
 /* ************************************ I2C API Functions ********************************/
 
@@ -131,6 +134,21 @@ uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t* I2Cx_Handler, uint8_t* RxBuffer, u
 uint8_t I2C_MasterSendDataIT(I2C_Handle_t* I2Cx_Handler, uint8_t* TxBuffer_ptr, uint32_t TxLen, uint8_t SlaveAddr, uint8_t RS);
 
 /*
+ * I2C Interrupt Event Handle
+ */
+void I2C_EV_IRQHandling(I2C_Handle_t* I2Cx_Handler);
+/*
+ * I2C Error Interrupt Handle
+ */
+void I2C_ERR_IRQHandling(I2C_Handle_t* I2Cx_Handler);
+
+/*
+ * I2C Slave Send Data and Receive Data
+ */
+uint8_t I2C_SlaveReceiveData(I2C_RegDef_t* I2Cx_ptr);
+void I2C_SlaveSendData(I2C_RegDef_t* I2Cx_ptr, uint8_t data);
+
+/*
  * User application Call back for interrupt event. Can be overwritten
  */
 void I2C_ApplicationEventCallBack(I2C_Handle_t* I2Cx_Handler, uint8_t AppEvent);
@@ -152,8 +170,5 @@ void I2C_Close_Tx(I2C_Handle_t *I2Cx_Handler);
 #define I2C2_RESET()				{RCC->APB1RSTR |= (1 << 6); RCC->APB1RSTR &= ~(1 << 6); }
 #define I2C3_RESET()				{RCC->APB1RSTR |= (1 << 7); RCC->APB1RSTR &= ~(1 << 7); }
 
-
-
-// TODO:: Reorganize the Header File to make it more comprehensible
 
 #endif /* INC_STM32F407XX_I2C_DRIVER_H_ */

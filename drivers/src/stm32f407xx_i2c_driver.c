@@ -459,6 +459,17 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 	NVIC_Ctrl->IPR->REG[TargetReg] |= (IRQPriority << ShiftAmount);
 }
 
+
+/*
+ * I2C Slave Operations: Send Data and Receive Data
+ */
+void I2C_SlaveSendData(I2C_RegDef_t* I2Cx_ptr, uint8_t data) {
+	I2Cx_ptr->DR =data;
+}
+uint8_t I2C_SlaveReceiveData(I2C_RegDef_t* I2Cx_ptr) {
+	return (uint8_t)I2Cx_ptr->DR;
+}
+
 /*
  * I2C Event Interrupt Handling. Will only get triggered if the ITEVTEN bit is set
  */
@@ -469,28 +480,33 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 		 // Initiate Address Phase
 		 I2c_Address_Phase(I2Cx_Handler, I2Cx_Handler->DeviceAddr);
 	 }
-	 // ADDR flag event. Trigger for both send and receive
-	 else if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_ADDR) == SET) {
+	 // ADDR flag event. Acknowledges Address Phase Completion
+	 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_ADDR) == SET) {
 		 I2C_Clear_Addr_Flag(I2Cx_Handler);
 	 }
 
 	 // Buffer event has to be enabled
+	 if (I2C_Get_IT_Flag(I2Cx_Handler->I2Cx_ptr, I2C_CR2_ITBUFEN) == SET) {
 
-	 else if (I2C_Get_IT_Flag(I2Cx_Handler->I2Cx_ptr, I2C_CR2_ITBUFEN) == SET) {
 		 // RxNE Flag: Data has arrived in DR
 		 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_RxNE) == SET) {
-			 // Check Device in Master: 1 or Slave:0 mode
+
+			 // Master Response to RXNE
 			 if (I2C_GetStatus2(I2Cx_Handler->I2Cx_ptr, I2C_SR2_MSL) == I2C_DEVICE_MODE_MASTER) {
 				 I2C_Master_RXNE_ITEV_Handle(I2Cx_Handler);
 			 }
-			 else {
-				 // TODO: SLAVE RESPONSE TO RXNE FLAG
-				 // I2C_Slave_RXNE_ITEV_Handle(I2Cx_Handler);
-			 }
+			 // Slave response to RXNE
+			 else if (I2C_Get_Status2(I2Cx_Handler->I2Cx_ptr, I2C_SR2_MSL) == I2C_DEVICE_MODE_SLAVE) {
 
+				 // check if slave is busy in Txe state
+				 if (I2Cx_Handler->State == I2C_STATE_TX_BUSY) {
+					 // Notify Application of RxNE flag set. Slave send Data
+					 I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ITEV_SLAVE_RXNE);
+				 }
+			 }
 		 }
 		 // TxE flag event
-		 else if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_TxE) == SET) {
+		 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_TxE) == SET) {
 			 // Master and Slave will have different responses to flag
 			 uint8_t DevMode = I2C_GetStatus2(I2Cx_Handler->I2Cx_ptr, I2C_SR2_MSL);
 			 // Master Txe Flag response:
@@ -498,14 +514,17 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 				 I2C_Master_TXE_ITEV_Handle(I2Cx_Handler);
 			 }
 			 else if (DevMode == I2C_DEVICE_MODE_SLAVE) {
-				 // TODO:: I2C_SLAVE MODE RESPONSE FOR TXE
-
+				 // Check if slave is busy in Rx state
+				 if (I2Cx_Handler->State == I2C_STATE_RX_BUSY) {
+					 // Notify Application TxE event. Slave transmit Data
+					 I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ITEV_SLAVE_TXE);
+				 }
 			 }
 		 }
 	 }
 	 // STOPF Flag event.
 	 // This can only be triggered by slave when it receive the Stop Condition from Master
-	 else if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_STOPF) == SET) {
+	 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_STOPF) == SET) {
 		 // Clear the Stop flag by reading Sr1 writing to Cr1
 		 (void)I2Cx_Handler->I2Cx_ptr->SR1;
 		 I2Cx_Handler->I2Cx_ptr->CR1 |= (0x00000000);
@@ -515,7 +534,7 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 	 }
 	 // BTF Flag event.
 	 // Just used by Master to close transmission if certain conditions are met
-	 else if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_BTF) == SET) {
+	 if (I2C_Get_Status1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_BTF) == SET) {
 
 		 // Transmission: we only care about using this as Stop Generation.
 		 if (I2Cx_Handler->State == I2C_STATE_TX_BUSY) {
@@ -536,7 +555,7 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 
 
 
- void I2C_ER_IRQHandling(I2C_Handle_t* I2Cx_Handler) {
+ void I2C_ERR_IRQHandling(I2C_Handle_t* I2Cx_Handler) {
 
 	 // Buss Error
 	 if (I2C_GetStatus1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_BERR) == SET) {
@@ -548,11 +567,12 @@ void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t 
 		// Notify User to handle Error
 		I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ERR_BERR);
 	 }
-	 // Acknowledge Failure
+	 // Acknowledge Failure.
 	 if (I2C_GetStatus1(I2Cx_Handler->I2Cx_ptr, I2C_SR1_AF) == SET) {
 		 // Clear AF flag
 		 I2Cx_Handler->I2Cx_ptr->SR1 &= ~(1 << I2C_SR1_AF);
 		 // Notify User. User should decide to generate Stop or Repeated Start
+		 // This is also received by slave do end I2C communication
 		 I2C_ApplicationEventCallBack(I2Cx_Handler, I2C_ERR_AF);
 	 }
 
