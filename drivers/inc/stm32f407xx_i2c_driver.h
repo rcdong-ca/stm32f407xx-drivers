@@ -160,6 +160,9 @@ void I2C_ApplicationEventCallBack(I2C_Handle_t* I2Cx_Handler, uint8_t AppEvent);
 void I2C_PCLKControl(I2C_Handle_t* I2Cx_Handler, uint8_t En_Di);  // Peripheral Clock controller
 
 
+/*
+ * Close Tranmissions and Receive call
+ */
 void I2C_Close_Rx(I2C_Handle_t *I2Cx_Handler);
 void I2C_Close_Tx(I2C_Handle_t *I2Cx_Handler);
 
