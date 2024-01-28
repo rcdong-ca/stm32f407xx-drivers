@@ -118,6 +118,21 @@ typedef struct {
 	__vo uint32_t FLTR;  // Noise filter register
 }I2C_RegDef_t;
 
+
+/*
+ * USART Peripheral Registers structure
+ */
+typedef struct {
+	__vo uint32_t SR;			// Status Register
+	__vo uint32_t DR;			// Data Register
+	uint32_t BRR;				// Baud Rate Register
+	uint32_t CR1;				// Control Registers 1->3
+	uint32_t CR2;
+	uint32_t CR3;
+	uint32_t GTPR;				// Guard Time and Prescaler Register
+}USART_RegDef_t;
+
+
 /* base address of flash and sram memory (based off stm32f4 ref man)*/
 #define FLASH_BASE_ADDR 		0x08000000U // where cod is stored
 #define SRAM1_BASE_ADDR 		0x20000000U // 112kB capacity
@@ -462,6 +477,42 @@ typedef struct {
 #define I2C_SR2_TRA						2   // Number of bytes transmitted/received
 #define I2C_SR2_BUSY					1   // I2C bus is busy
 #define I2C_SR2_MSL						0	// Device in Master/Slave mode
+
+
+
+/*
+ * USART Status Register Bit Fields
+ */
+#define USART_SR_CTS					9
+#define USART_SR_LBD					8
+#define USART_SR_TXE					7
+#define USART_SR_TC						6
+#define USART_SR_RXNE					5
+#define USART_SR_IDLE					4
+#define USART_SR_ORE					3
+#define USART_SR_NF						2
+#define USART_SR_FE						1
+#define USART_SR_PE						0
+
+
+/*
+ *USART CR1 Register Bit Fields
+ */
+#define USART_CR1_OVER8					15
+#define USART_CR1_UE					13
+#define USART_CR1_M						12
+#define USART_CR1_WAKE					11
+#define USART_CR1_PCE					10
+#define USART_CR1_PS					9
+#define USART_CR1_PEIE					8
+#define USART_CR1_TXEIE					7
+#define USART_CR1_TCIE					6
+#define USART_CR1_RXNEIE				5
+#define USART_CR1_IDLEIE				4
+#define USART_CR1_TE					3
+#define USART_CR1_RE					2
+#define USART_CR1_RWU					1
+#define USART_CR1_SBK					0
 
 
 
