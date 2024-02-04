@@ -14,6 +14,7 @@
 
 #define __vo volatile
 
+#define NVIC_IPR_FIELD_SIZE				8	// IPR register is composed of 4 fields, 8 bits long
 
 #define NVIC_ISER_BASEADDR				(0xE000E100U)
 #define NVIC_ICER_BASEADDR				(0XE000E180U)
@@ -40,17 +41,24 @@ typedef struct {
  * structure definition of NVIC controller. Must be initiated by NVIC_Ctrl_Init
  */
 typedef struct {
-	EightArr_Regs* ISER;
-	EightArr_Regs* ICER;
-	EightArr_Regs* ISPR;
-	EightArr_Regs* ICPR;
-	IPR_Regs* IPR;
+	EightArr_Regs* ISER;	// Interrupt Set Enable; Enables the interrupt
+	EightArr_Regs* ICER;	// Interrupt Clear Enable; Disable the interuppt
+	EightArr_Regs* ISPR;	// Interrupt set Pending; Set interrupt to pending state
+	EightArr_Regs* ICPR;	// Intterupt Clear Pending;	Remove Pending state from interrupt
+	IPR_Regs* IPR;			// Interrupt Priority Register
 	uint32_t* STIR;
 }NVIC_RegDef_t;
 
-#define NVIC_IPR_FIELD_SIZE				8
-
+void IRQInterruptConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t EN_DI);
+/*
+ * NVIC_PrBits is MCU specific. Refer to MCU on how many priority will be supported.
+ * STM32f4: refer to @NVIC_MCU_PR_BITS in stm32f407xx.h
+ */
+void IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint32_t IRQPriority, uint8_t NVIC_PrBits);
 void NVIC_CtrlInit(NVIC_RegDef_t* NVIC_Ctrl);
-/* Interrupt Priority Register */
+
+
+#define	DISABLE							(0)
+#define ENABLE							(1)
 
 #endif /* INC_ARM_CORTEXM4_H_ */

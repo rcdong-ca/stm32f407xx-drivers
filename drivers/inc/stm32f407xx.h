@@ -218,6 +218,21 @@ typedef struct {
 #define I2C3					((I2C_RegDef_t*)I2C3_BASE_ADDR)
 
 /*
+ * USART: Universal Sync/Async ReceiveTransmit
+ */
+#define USART1					((USART_RegDef_t*)USART1_BASE_ADDR)
+#define USART2					((USART_RegDef_t*)USART2_BASE_ADDR)
+#define USART3					((USART_RegDef_t*)USART3_BASE_ADDR)
+#define USART6					((USART_RegDef_t*)USART6_BASE_ADDR)
+/*
+ * UART: Universal Async Receive Transmit. These will share the same registers as USART, but lacking
+ * the Synchronous feature
+ */
+#define UART4					((USART_RegDef_t*)UART4_BASE_ADDR)
+#define UART5					((USART_RegDef_t*)UART5_BASE_ADDR)
+
+
+/*
  * IRQ (Interrupt Requests) Interrupt Position/Number
  */
 // External Interrupt Controller lines
@@ -229,6 +244,11 @@ typedef struct {
 #define IRQ_NO_EXTI9_5						23
 #define IRQ_NO_EXTI15_10					40
 
+// SPI IRQ Positions
+#define IRQ_NO_SPI1							35
+#define IRQ_NO_SPI2							36
+#define IRQ_NO_SPI3							51
+
 // I2C IRQ Positions
 #define IRQ_NO_I2C1_EV						31
 #define IRQ_NO_I2C1_ER						32
@@ -236,6 +256,14 @@ typedef struct {
 #define IRQ_NO_I2C2_ER						34
 #define IRQ_NO_I2C3_EV						79
 #define IRQ_NO_I2C3_ER						80
+
+// USART IRQ positions
+#define IRQ_NO_USART1						37
+#define IRQ_NO_USART2						38
+#define IRQ_NO_USART3						39
+#define IRQ_NO_UART4						52
+#define IRQ_NO_UART5						53
+#define IRQ_NO_USART6						71
 
 /*
  * IRQ Priority Levels/Value. 16 Programmable levels used for NVIC_IPR_REG
@@ -258,7 +286,8 @@ typedef struct {
 #define NVIC_IRQ_PRI15					15
 
 /*
- * MCU supports 16 programmable priority levels; 4 bits of interrupt priority are implemented
+ * @NVIC_MCU_PR_BITS supports 16 programmable priority levels; 4 bits of interrupt priority are implemented.
+ * As NVIC PRI reg provides 8 bit priority field, only 4 high order bits will be used,
  */
 #define NVIC_MCU_PR_BITS				4
 
@@ -323,6 +352,7 @@ typedef struct {
 #define USART2_PCLK_EN()				(RCC->APB1ENR |= (1 << 17))
 #define USART3_PCLK_EN()				(RCC->APB1ENR |= (1 << 18))
 #define USART6_PCLK_EN()				(RCC->APB2ENR |= (1 << 5))
+
 #define USART1_PCLK_DI()				(RCC->APB2ENR &= (0 << 4))
 #define USART2_PCLK_DI()				(RCC->APB1ENR &= (0 << 17))
 #define USART3_PCLK_DI()				(RCC->APB1ENR &= (0 << 18))
