@@ -544,6 +544,18 @@ typedef struct {
 #define USART_CR1_RWU					1
 #define USART_CR1_SBK					0
 
+/*
+ * USART CR2 Register Bit fields
+ */
+#define USART_CR2_LINEN					14
+#define USART_CR2_STOP					12
+
+/*
+ * USART CR# Register bit Fields
+ */
+#define USART_CR3_CTSE					9
+#define USART_CR3_RTSE					8
+
 
 
 /* @OTHER_MACROS
