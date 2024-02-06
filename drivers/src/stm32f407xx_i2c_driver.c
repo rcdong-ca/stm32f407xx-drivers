@@ -420,47 +420,6 @@ uint8_t I2C_MasterReceiveDataIT(I2C_Handle_t* I2Cx_Handler, uint8_t* RxBuffer, u
 }
 
 /*
- * I2C IRQ Handling
- */
-void I2C_IRQInterruptConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t EN_DI) {	// Interrupt requests configuration
-	if (EN_DI == ENABLE) {
-
-			// MCU only supports up to 81 IRQ numbers, so we only need NVIC_ISER0 - NVIC_ISER2 registers
-		if (IRQNumber < 32) {
-				NVIC_Ctrl->ISER->REG[0] |= (1 << (IRQNumber % 32) );
-			}
-			else if (IRQNumber < 64) {
-				NVIC_Ctrl->ISER->REG[1] |= (1 << (IRQNumber % 32) );
-			}
-			else if (IRQNumber < 96) {
-				NVIC_Ctrl->ISER->REG[2] |= (1 << (IRQNumber % 32) );
-			}
-		}
-	else {
-			if (IRQNumber < 32) {
-				NVIC_Ctrl->ICER->REG[0] |= (1 << (IRQNumber % 32) );
-			}
-			else if (IRQNumber < 64) {
-				NVIC_Ctrl->ICER->REG[1] |= (1 << (IRQNumber % 32) );
-			}
-			else if (IRQNumber < 96) {
-				NVIC_Ctrl->ICER->REG[2] |= (1 << (IRQNumber % 32) );
-			}
-		}
-}
-void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t IRQPriority) {
-	// IPR has 4 8bit priority field
-	uint8_t TargetReg = IRQNumber / 4;
-	uint8_t TargetField = IRQNumber % 4;
-
-	// MCU support 16 levels; 4 bits of interrupt priority are used. This means only the 4 most significant bits
-	// in the field will be used, as stated by the processor manual
-	uint8_t ShiftAmount = ( TargetField * 8) + (NVIC_IPR_FIELD_SIZE - NVIC_MCU_PR_BITS) ;
-	NVIC_Ctrl->IPR->REG[TargetReg] |= (IRQPriority << ShiftAmount);
-}
-
-
-/*
  * I2C Slave Operations: Send Data and Receive Data
  */
 void I2C_SlaveSendData(I2C_RegDef_t* I2Cx_ptr, uint8_t data) {

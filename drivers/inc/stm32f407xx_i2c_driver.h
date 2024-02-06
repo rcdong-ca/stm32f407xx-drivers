@@ -106,13 +106,6 @@ uint8_t I2C_GetStatus1(I2C_RegDef_t* I2Cx_ptr, uint8_t StatusField);  // SR1
 uint8_t I2C_GetStatus2(I2C_RegDef_t* I2Cx_ptr, uint8_t StatusField);  // SR2
 
 /*
- * IRQ (Interrupt request) configuration and ISR (Interrupt Signal Response) handling
- */
-
-void I2C_IRQInterruptConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t EN_DI);	// Interrupt requests configuration
-void I2C_IRQPriorityConfig(NVIC_RegDef_t* NVIC_Ctrl, uint8_t IRQNumber, uint8_t IRQPriority);
-
-/*
  * I2C Non Blocking Master receive
  * Input:
  * 	I2C_Handler
