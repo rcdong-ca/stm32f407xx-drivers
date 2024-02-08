@@ -513,36 +513,36 @@ typedef struct {
 /*
  * USART Status Register Bit Fields
  */
-#define USART_SR_CTS					9
-#define USART_SR_LBD					8
-#define USART_SR_TXE					7
-#define USART_SR_TC						6
-#define USART_SR_RXNE					5
-#define USART_SR_IDLE					4
-#define USART_SR_ORE					3
-#define USART_SR_NF						2
-#define USART_SR_FE						1
-#define USART_SR_PE						0
+#define USART_SR_CTS					9	// CTS flag. Not available for UART4 and USART 5
+#define USART_SR_LBD					8	// Line break detection flag
+#define USART_SR_TXE					7	// Transmit Data Register Empty
+#define USART_SR_TC						6	// Transmission complete. Dependent that TXE is set
+#define USART_SR_RXNE					5	// Read Data register is not empty
+#define USART_SR_IDLE					4	// Idle line is detected
+#define USART_SR_ORE					3	// Overrun Error
+#define USART_SR_NF						2	// Noise Detected Flag
+#define USART_SR_FE						1	// Framing Error
+#define USART_SR_PE						0	// Parity Error
 
 
 /*
  *USART CR1 Register Bit Fields
  */
-#define USART_CR1_OVER8					15
-#define USART_CR1_UE					13
-#define USART_CR1_M						12
-#define USART_CR1_WAKE					11
-#define USART_CR1_PCE					10
-#define USART_CR1_PS					9
+#define USART_CR1_OVER8					15	// Oversampling mode. 0: By 8. 1: by 16
+#define USART_CR1_UE					13  // USART Enable
+#define USART_CR1_M						12  // Word Length. 0: 8 Data bits. 1: 9 Data Bits
+#define USART_CR1_WAKE					11  // Wake up Method. 0: Idle Line, 1: Address Mark
+#define USART_CR1_PCE					10  // Parity Control Enable. 0: Disabled, 1: Enabled
+#define USART_CR1_PS					9	// Parity Selection 0: Enable, 1: Odd
 #define USART_CR1_PEIE					8
 #define USART_CR1_TXEIE					7
 #define USART_CR1_TCIE					6
 #define USART_CR1_RXNEIE				5
 #define USART_CR1_IDLEIE				4
-#define USART_CR1_TE					3
-#define USART_CR1_RE					2
-#define USART_CR1_RWU					1
-#define USART_CR1_SBK					0
+#define USART_CR1_TE					3  // Transmitter Enable
+#define USART_CR1_RE					2  // Receive Enable
+#define USART_CR1_RWU					1  // Receiver Wake up
+#define USART_CR1_SBK					0  // Send Break
 
 /*
  * USART CR2 Register Bit fields
