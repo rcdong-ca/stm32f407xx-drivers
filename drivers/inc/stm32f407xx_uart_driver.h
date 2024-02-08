@@ -16,6 +16,7 @@ typedef struct {
 	uint32_t BaudRate;
 	uint8_t NumOfStopBits;
 	uint8_t WordLength;
+	uint8_t ParityControl;		// Enable Parity or Disable Parity
 	uint8_t ParitySelection; 	// Odd or even parity @USART_PARITY
 	uint8_t HWFlowControl;
 }USART_Config_t;
@@ -66,7 +67,7 @@ void USART_IRQHandling(USART_Handle_t* USART_Handler);
  */
 
 uint8_t USART_GetStatus(USART_RegDef_t *USARTx_ptr, uint8_t StatusField);
-void USART_ClearStatus(USART_RegDef_t* USARTx_ptr, uint16_t StatusField);
+void USART_ClearStatus(USART_RegDef_t* USARTx_ptr, uint8_t StatusField);
 void USART_PeripheralControl(USART_RegDef_t* USARTx_ptr, uint8_t En_Di);
 void USART_SetBaudRate(USART_RegDef_t* USARTx_ptr, uint32_t BaudRate);
 
@@ -87,9 +88,8 @@ void USART_ApplicationEventCallback(USART_Handle_t* USART_Handler, uint8_t AppEv
 /*
  * @USART_PARITY selection
  */
-#define USART_PARITY_DISABLE					0
-#define USART_PARITY_EVEN						1
-#define USART_PARITY_ODD						2
+#define USART_PARITY_EVEN						0
+#define USART_PARITY_ODD						1
 
 /*
  * @USART_NStopBits. Number of Stop Bits transmitted after every character

@@ -77,8 +77,10 @@ void USART_Init(USART_Handle_t* USART_Handler) {
 	tempReg |= (USART_Handler->USART_Config.WordLength << USART_CR1_M);
 
 	// Set the Parity control
-	tempReg |= (1 << USART_CR1_PCE);
-	tempReg |= (USART_Handler->USART_Config.ParitySelection << USART_CR1_PS);
+	if (USART_Handler->USART_Config.ParityControl == ENABLE) {
+		tempReg |= (1 << USART_CR1_PCE);
+		tempReg |= (USART_Handler->USART_Config.ParitySelection << USART_CR1_PS);
+	}
 
 
 	// Conifgure the device mode: Receiver or Transmitter
@@ -125,6 +127,78 @@ void USART_DeInit(USART_Handle_t* USART_Handler) {
 uint8_t USART_GetStatus(USART_RegDef_t *USARTx_ptr, uint8_t StatusField) {
 	return (USARTx_ptr->SR >> StatusField) & 0x1;
 }
+
+void USART_ClearStatus(USART_RegDef_t* USARTx_ptr, uint8_t StatusField) {
+	if (StatusField == USART_SR_TC) {
+		// read SR and write 0 to DR
+		(void)USARTx_ptr->SR;
+		USARTx_ptr->DR = 0;
+	}
+}
+
+
+/*
+ * USART Send and Receive. Blocking calls
+ */
+void USART_SendData(USART_Handle_t* USART_Handler, uint8_t* TxBuffer, uint32_t Len) {
+
+	while (Len > 0 ) {
+		// wait for data register to be empty
+		while (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_TXE) == NOT_SET);
+		if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_8) {
+			// Parity Enabled will not affect how we increment buffer.
+			USART_Handler->USARTx_ptr->DR = *TxBuffer;
+			TxBuffer++;
+		}
+		else if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_9) {
+			// Parity Enabled will affect how we increment buffer
+			if (USART_Handler->USART_Config.ParityControl == ENABLE) {
+				// Send 8 bits of data
+				USART_Handler->USARTx_ptr->DR = *TxBuffer;
+				TxBuffer++;
+			}
+			else if (USART_Handler->USART_Config.ParityControl == DISABLE) {
+				// Send 9 bits of data
+				USART_Handler->USARTx_ptr->DR = *(uint16_t*)TxBuffer &0x1FF;
+				TxBuffer += 2;
+			}
+		}
+		Len--;
+	}
+
+	// Wait for TC status to be set
+	while (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_TC) == NOT_SET);
+	// Clear the TC status
+	USART_ClearStatus(USART_Handler->USARTx_ptr, USART_SR_TC);
+}
+
+void USART_ReceiveData(USART_Handle_t* USART_Handler, uint8_t* RxBuffer, uint32_t Len) {
+
+	while (Len > 0) {
+
+		// wait for RXNE bit to be set. Data has arrived in DR
+		while (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_RXNE) == NOT_SET);
+
+		if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_8) {
+			// Data can go directly into buffer
+			*RxBuffer = USART_Handler->USARTx_ptr->DR;
+		}
+		else if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_9) {
+			if (USART_Handler->USART_Config.ParityControl == ENABLE) {
+				// data can go directly into buffer
+				*RxBuffer = USART_Handler->USARTx_ptr->DR;
+			}
+			else {
+				// 9 bits of data
+				*(uint16_t*)RxBuffer = USART_Handler->USARTx_ptr->DR;
+				RxBuffer+=2;
+			}
+		}
+		Len--;
+	}
+
+}
+
 
 
 void USART_IRQHandling(USART_Handle_t* USART_Handler) {
