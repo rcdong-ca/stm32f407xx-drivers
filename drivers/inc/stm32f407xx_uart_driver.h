@@ -9,6 +9,7 @@
 #define INC_STM32F407XX_UART_DRIVER_H_
 
 #include "stm32f407xx.h"
+#include "stm32f407xx_rcc_driver.h"
 #include "arm_cortexM4.h"
 
 typedef struct {
@@ -84,6 +85,12 @@ void USART_ApplicationEventCallback(USART_Handle_t* USART_Handler, uint8_t AppEv
 #define USART_DEVICE_MODE_TX					0
 #define USART_DEVICE_MODE_RX					1
 #define USART_DEVICE_MODE_TXRX					2
+
+/*
+ * @USART_OVERSAMPLING. Used for buad rate calculation
+ */
+#define USART_OVERSAMPLE_8						1
+#define USART_OVERAMPLE_16						0
 
 /*
  * @USART_PARITY selection

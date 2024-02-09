@@ -528,7 +528,7 @@ typedef struct {
 /*
  *USART CR1 Register Bit Fields
  */
-#define USART_CR1_OVER8					15	// Oversampling mode. 0: By 8. 1: by 16
+#define USART_CR1_OVER8					15	// Oversampling mode. 0: By 16. 1: by 0
 #define USART_CR1_UE					13  // USART Enable
 #define USART_CR1_M						12  // Word Length. 0: 8 Data bits. 1: 9 Data Bits
 #define USART_CR1_WAKE					11  // Wake up Method. 0: Idle Line, 1: Address Mark
@@ -543,6 +543,12 @@ typedef struct {
 #define USART_CR1_RE					2  // Receive Enable
 #define USART_CR1_RWU					1  // Receiver Wake up
 #define USART_CR1_SBK					0  // Send Break
+
+/*
+ * USART BRR Register bit Fields
+ */
+#define USART_BRR_MANTISSA				4	// 12 bit long. Start at Bit field 4
+#define USART_BRR_FRACTION				0	// 4 bit long. Start at Bit Field 0
 
 /*
  * USART CR2 Register Bit fields

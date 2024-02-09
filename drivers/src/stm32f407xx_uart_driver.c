@@ -64,6 +64,34 @@ void USART_PClockControl(USART_RegDef_t* UARTx_ptr, uint8_t En_Di) {
 	}
 }
 
+/*
+ * Baud Rate control. Only Supports Standard Mode
+ */
+void USART_SetBaudRate(USART_RegDef_t* USARTx_ptr, uint32_t BaudRate) {
+
+	uint16_t Mantissa = 0;  // Mantissa is the whole number part. Only 12 bits will be used
+	uint8_t Fraction = 0;  // Fractino of USART_DIV
+	uint8_t OverSampling = (USARTx_ptr->CR1 >> USART_CR1_OVER8) & 0x1;
+
+	// USART peripherals can be found on APB1 and APB2. Determine which clock to use
+	uint32_t ClockSpeed = RCC_GetPCLK1Value();
+	if (USARTx_ptr == USART1 || USARTx_ptr == USART6) {
+		ClockSpeed = RCC_GetPCLK2Value();
+	}
+
+	// Equation: USART_DIV = fclk / (8 * (2-OVER8) * TxRxBaudRate). Multiply by 100 to get fraction
+	uint32_t UsartDiv = (ClockSpeed * 100) / (8 * (2 - OverSampling) * BaudRate);
+
+	Mantissa = UsartDiv / 100;
+	Fraction = (UsartDiv - Mantissa*100);
+
+	uint32_t TempReg = 0;
+	TempReg |= (Mantissa << USART_BRR_MANTISSA);
+	TempReg |= ((Fraction << USART_BRR_FRACTION) & 0xF); // 4 bit long
+
+	USARTx_ptr->BRR = TempReg;
+}
+
 
 void USART_Init(USART_Handle_t* USART_Handler) {
 
@@ -118,7 +146,7 @@ void USART_Init(USART_Handle_t* USART_Handler) {
 		tempReg = (1 << USART_CR3_CTSE);
 	}
 
-	USART_SetBaudRate(USART_Handler);
+	USART_SetBaudRate(USART_Handler->USARTx_ptr, USART_Handler->USART_Config.BaudRate);
 }
 void USART_DeInit(USART_Handle_t* USART_Handler) {
 }
@@ -196,7 +224,6 @@ void USART_ReceiveData(USART_Handle_t* USART_Handler, uint8_t* RxBuffer, uint32_
 		}
 		Len--;
 	}
-
 }
 
 
