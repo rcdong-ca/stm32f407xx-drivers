@@ -8,9 +8,9 @@
 #ifndef INC_STM32F407XX_I2C_DRIVER_H_
 #define INC_STM32F407XX_I2C_DRIVER_H_
 
+#include "stm32f407xx_rcc_driver.h"
 #include "arm_cortexM4.h"
 #include "stm32f407xx.h"
-#include "stm32f407xx_general_functions.h"
 
 // Configurable parameters for I2C
 typedef struct {
