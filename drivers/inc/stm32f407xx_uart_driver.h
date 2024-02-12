@@ -25,6 +25,15 @@ typedef struct {
 typedef struct {
 	USART_RegDef_t* USARTx_ptr;
 	USART_Config_t USART_Config;
+
+	uint8_t TxState;				// Tx State: based off @USART_STATE_BUSY
+	uint8_t *TxBuffer;
+	uint32_t TxLen;
+
+	uint8_t RxState;
+	uint8_t* RxBuffer;
+	uint32_t RxLen;
+
 }USART_Handle_t;
 
 
@@ -79,12 +88,21 @@ void USART_SetBaudRate(USART_RegDef_t* USARTx_ptr, uint32_t BaudRate);
 void USART_ApplicationEventCallback(USART_Handle_t* USART_Handler, uint8_t AppEvent);
 
 
+/************ USART MACROS AND OTHERS****************/
+
 /*
- * USART MACROS AND OTHERS
+ * @USART_DEVICE_MODE
  */
 #define USART_DEVICE_MODE_TX					0
 #define USART_DEVICE_MODE_RX					1
 #define USART_DEVICE_MODE_TXRX					2
+
+/*
+ * @USART_STATE_BUSY
+ */
+#define USART_STATE_READY						0
+#define USART_STATE_RX_BUSY						1
+#define USART_STATE_TX_BUSY						2
 
 /*
  * @USART_OVERSAMPLING. Used for buad rate calculation

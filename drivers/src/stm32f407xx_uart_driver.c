@@ -227,6 +227,38 @@ void USART_ReceiveData(USART_Handle_t* USART_Handler, uint8_t* RxBuffer, uint32_
 }
 
 
+/******************************** USART Interrupt API calls *************************************/
+
+uint8_t USART_SendDataIT(USART_Handle_t* USART_Handler, uint8_t *TxBuffer, uint32_t Len) {
+
+		// Check if it is already in TxState
+		if (USART_Handler->TxState != USART_STATE_TX_BUSY) {
+			USART_Handler->TxBuffer = TxBuffer;
+			USART_Handler->TxLen = Len;
+			USART_Handler->TxState = USART_STATE_TX_BUSY;
+
+			// Enable Send Interrupts
+			USART_Handler->USARTx_ptr->CR1 |= (1 << USART_CR1_TXEIE);
+			USART_Handler->USARTx_ptr->CR1 |= (1 << USART_CR1_TCIE);
+			return 1;
+		}
+		return 0;
+}
+
+uint8_t USART_ReceiveDataIT(USART_Handle_t* USART_Handler, uint8_t *RxBuffer, uint32_t Len) {
+
+		// Check if it is already in TxState
+		if (USART_Handler->RxState != USART_STATE_RX_BUSY) {
+			USART_Handler->RxBuffer = RxBuffer;
+			USART_Handler->RxLen = Len;
+			USART_Handler->RxState = USART_STATE_RX_BUSY;
+
+			// Enable Send Interrupts
+			USART_Handler->USARTx_ptr->CR1 |= (1 << USART_CR1_RXNEIE);
+			return 1;
+		}
+		return 0;
+}
 
 void USART_IRQHandling(USART_Handle_t* USART_Handler) {
 
