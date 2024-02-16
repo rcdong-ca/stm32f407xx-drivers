@@ -85,7 +85,7 @@ void USART_SetBaudRate(USART_RegDef_t* USARTx_ptr, uint32_t BaudRate);
 /*
  * Application Callbacks
  */
-void USART_ApplicationEventCallback(USART_Handle_t* USART_Handler, uint8_t AppEvent);
+void USART_ApplicationEventCallBack(USART_Handle_t* USART_Handler, uint8_t AppEvent);
 
 
 /************ USART MACROS AND OTHERS****************/
@@ -147,6 +147,11 @@ void USART_ApplicationEventCallback(USART_Handle_t* USART_Handler, uint8_t AppEv
 #define USART_BAUD_9600							9600
 #define USART_BAUD_19200						19200
 
+
+/*
+ * @USART_IT_EV_CMPLT Interrupt event completion
+ */
+#define USART_ITEV_TX_CMPLT						0
 
 
 #endif /* INC_STM32F407XX_UART_DRIVER_H_ */

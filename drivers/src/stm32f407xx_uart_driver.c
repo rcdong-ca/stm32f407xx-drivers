@@ -11,6 +11,7 @@
 
 
 #include "stm32f407xx_uart_driver.h"
+#include <stddef.h>
 
 void USART_PeripheralControl(USART_RegDef_t* USARTx_ptr, uint8_t En_Di) {
 	if (En_Di == ENABLE) {
@@ -260,9 +261,113 @@ uint8_t USART_ReceiveDataIT(USART_Handle_t* USART_Handler, uint8_t *RxBuffer, ui
 		return 0;
 }
 
-void USART_IRQHandling(USART_Handle_t* USART_Handler) {
+static void USART_TC_EV_IT_Handle(USART_Handle_t* USART_Handler) {
+	// close the Tramission
+
+	// Clear the TC Flag
+	(void)USART_Handler->USARTx_ptr->SR;
+	// double check all data has been sent
+
+	if (USART_Handler->TxLen != 0)
+		return;
+
+	// Clear TCIE control bit
+	USART_Handler->USARTx_ptr->CR1 &= ~(1 << USART_CR1_TCIE);
+
+	// Reset Peripheral state
+	USART_Handler->TxState = USART_STATE_READY;
+
+	// reset buffer and length
+	USART_Handler->TxBuffer = NULL;
+	USART_Handler->TxLen = 0;
+	// Notify application of Transmission completion
+	USART_ApplicationEventCallBack(USART_Handler, USART_ITEV_TX_CMPLT);
+}
+
+static void USART_TXE_EV_IT_Handle(USART_Handle_t* USART_Handler) {
+	if (USART_Handler->TxLen > 0 ) {
+			// wait for data register to be empty
+			if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_8) {
+				// Parity Enabled will not affect how we increment buffer.
+				USART_Handler->USARTx_ptr->DR = *USART_Handler->TxBuffer;
+				USART_Handler->TxBuffer++;
+			}
+			else if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_9) {
+				// Parity Enabled will affect how we increment buffer
+				if (USART_Handler->USART_Config.ParityControl == ENABLE) {
+					// Send 8 bits of data
+					USART_Handler->USARTx_ptr->DR = *USART_Handler->TxBuffer;
+					USART_Handler->TxBuffer++;
+				}
+				else if (USART_Handler->USART_Config.ParityControl == DISABLE) {
+					// Send 9 bits of data
+					USART_Handler->USARTx_ptr->DR = *(uint16_t*)USART_Handler->TxBuffer & 0x1FF;
+					USART_Handler->TxBuffer += 2;
+				}
+			}
+			USART_Handler->TxLen--;
+		}
+}
+
+void USART_RXNE_EV_IT_Handle(USART_Handle_t* USART_Handler) {
+	if (USART_Handler->RxLen > 0) {
+
+			if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_8) {
+				// Data can go directly into buffer
+				*USART_Handler->RxBuffer = USART_Handler->USARTx_ptr->DR;
+			}
+			else if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_9) {
+				if (USART_Handler->USART_Config.ParityControl == ENABLE) {
+					// data can go directly into buffer
+					*USART_Handler->RxBuffer = USART_Handler->USARTx_ptr->DR;
+				}
+				else {
+					// 9 bits of data
+					*USART_Handler->RxBuffer = USART_Handler->USARTx_ptr->DR;
+					USART_Handler->RxBuffer+=2;
+				}
+			}
+			USART_Handler->RxLen--;
+		}
+}
+
+void USART_EVIRQHandling(USART_Handle_t* USART_Handler) {
+
+	// TXE event
+	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_TXE) == SET) {
+
+		// Check if Transmission has been completed
+		if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_TC) == SET) {
+			USART_TC_EV_IT_Handle(USART_Handler);
+		}
+		else {  // Send the remaining data
+			USART_TXE_EV_IT_Handle(USART_Handler);
+		}
+	}
+	// RXNE event
+	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_RXNE) == SET) {
+		USART_RXNE_EV_IT_Handle(USART_Handler);
+	}
+
+	// CTS Event
+	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_CTS) == SET) {
+
+	}
+
+	// Idle Character event
+	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_IDLE) == SET) {
+	}
+}
+void USART_ERRIRQHandling(USART_Handle_t* USART_Handler) {
 
 }
+
+
+__attribute__((weak)) void USART_ApplicationEventCallBack(USART_Handle_t* USART_Handler, uint8_t AppEvent) {
+	// Weak Implementation. User should override this function
+
+}
+
 
 
 
