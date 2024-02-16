@@ -71,6 +71,12 @@ uint8_t USART_ReceiveDataIT(USART_Handle_t* USART_Handler, uint8_t* RxBuffer, ui
 
 void USART_IRQHandling(USART_Handle_t* USART_Handler);
 
+/*
+ * Error event handle.
+ * User will be responsible to clear flag set be error with USART_ClearStatus function
+ */
+void USART_ERRIRQHandling(USART_Handle_t* USART_Handler);
+
 
 /*
  * Other Peripheral Control APIs
@@ -83,7 +89,7 @@ void USART_SetBaudRate(USART_RegDef_t* USARTx_ptr, uint32_t BaudRate);
 
 
 /*
- * Application Callbacks
+ * Application Callback. User should override this function
  */
 void USART_ApplicationEventCallBack(USART_Handle_t* USART_Handler, uint8_t AppEvent);
 
@@ -134,9 +140,20 @@ void USART_ApplicationEventCallBack(USART_Handle_t* USART_Handler, uint8_t AppEv
  * @USARt_HWFlowControl
  */
 #define USART_HW_FLOW_CTRL_NONE					0
-#define USART_HW_FLOW_CTRL_CTS					1
-#define USART_HW_FLOW_CTRL_RTS					2
-#define USART_HW_FLOW_CTRL_CTS_RTS				3
+#define USART_HW_FLOW_CTRL_CTS					1	// Clear to Send. 0: can transmit. 1: cannot transmit
+#define USART_HW_FLOW_CTRL_RTS					2	// Request to send. 0: Ready to receive. 2: not ready
+#define USART_HW_FLOW_CTRL_CTS_RTS				3	// Both are enabled
+
+/*
+ * @USART_EV_ERR_MSG
+ * Event/Error notification for application callback durint interrupts
+ */
+#define USART_EVENT_CTS						0	// Clear to send
+#define USART_EVENT_IDLE					1	// Idle character
+#define USART_ERROR_ORE						2	// Overrun Error
+#define USART_ERROR_NF						3	// Noise Error
+#define USART_ERROR_FE						4	// Frame Error
+
 
 /*
  * @USART_BAUD

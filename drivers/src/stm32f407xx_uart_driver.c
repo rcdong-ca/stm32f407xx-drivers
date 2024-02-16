@@ -158,10 +158,37 @@ uint8_t USART_GetStatus(USART_RegDef_t *USARTx_ptr, uint8_t StatusField) {
 }
 
 void USART_ClearStatus(USART_RegDef_t* USARTx_ptr, uint8_t StatusField) {
-	if (StatusField == USART_SR_TC) {
-		// read SR and write 0 to DR
-		(void)USARTx_ptr->SR;
-		USARTx_ptr->DR = 0;
+	switch (StatusField) {
+		case(USART_SR_CTS):
+			USARTx_ptr->SR &= ~(1 << StatusField);
+			break;
+		case(USART_SR_LBD):
+			USARTx_ptr->SR &= ~(1 << StatusField);
+			break;
+		case(USART_SR_TXE):
+			(void)USARTx_ptr->SR;
+			USARTx_ptr->DR = 0;
+			break;
+		case(USART_SR_IDLE):
+			(void)USARTx_ptr->SR;
+			(void)USARTx_ptr->DR;
+			break;
+		case(USART_SR_ORE):
+			(void)USARTx_ptr->SR;
+			(void)USARTx_ptr->DR;
+			break;
+		case(USART_SR_NF):
+			(void)USARTx_ptr->SR;
+			(void)USARTx_ptr->DR;
+			break;
+		case(USART_SR_FE):
+			(void)USARTx_ptr->SR;
+			(void)USARTx_ptr->DR;
+			break;
+		case(USART_SR_PE):
+			(void)USARTx_ptr->SR;
+			USARTx_ptr->DR = 0;
+			break;
 	}
 }
 
@@ -309,7 +336,7 @@ static void USART_TXE_EV_IT_Handle(USART_Handle_t* USART_Handler) {
 		}
 }
 
-void USART_RXNE_EV_IT_Handle(USART_Handle_t* USART_Handler) {
+static void USART_RXNE_EV_IT_Handle(USART_Handle_t* USART_Handler) {
 	if (USART_Handler->RxLen > 0) {
 
 			if (USART_Handler->USART_Config.WordLength == USART_WORDLEN_8) {
@@ -352,14 +379,38 @@ void USART_EVIRQHandling(USART_Handle_t* USART_Handler) {
 	// CTS Event
 	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_CTS) == SET) {
 
+		// Clear the flag, and notify the user that receiver is not ready
+		USART_Handler->USARTx_ptr->SR |= ~(1 << USART_SR_CTS);
+		USART_ApplicationEventCallBack(USART_Handler, USART_EVENT_CTS);
 	}
 
-	// Idle Character event
+	// Idle Character event. Device is currently idling
 	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_IDLE) == SET) {
+		// Clear the Idle flag and notify use
+		(void)USART_Handler->USARTx_ptr->SR;
+		(void)USART_Handler->USARTx_ptr->DR;
+
+		// Notify user of idling
+		USART_ApplicationEventCallBack(USART_Handler, USART_EVENT_IDLE);
 	}
 }
+
 void USART_ERRIRQHandling(USART_Handle_t* USART_Handler) {
 
+	// Overrun Error
+	if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_ORE) == SET) {
+		// Clear Flag and Notify user of Overrun error
+		USART_ApplicationEventCallBack(USART_Handler, USART_ERROR_ORE);
+	}
+	// Noise error
+	else if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_NF) == SET) {
+		// Notify user of Noise error
+		USART_ApplicationEventCallBack(USART_Handler, USART_ERROR_NF);
+	}
+	// Framing Error
+	else if (USART_GetStatus(USART_Handler->USARTx_ptr, USART_SR_FE) == SET) {
+		USART_ApplicationEventCallBack(USART_Handler, USART_ERROR_FE);
+	}
 }
 
 
